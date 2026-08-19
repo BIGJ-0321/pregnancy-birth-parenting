@@ -92,6 +92,12 @@ export async function toggleChecklistItem(householdId, itemId, checked, byName) 
   });
 }
 
+export async function saveNextCheckup(householdId, dateStr) {
+  await updateDoc(doc(db, "households", householdId), {
+    nextCheckupDate: dateStr,
+  });
+}
+
 export async function addSymptomRecord(householdId, symptom, byName) {
   await updateDoc(doc(db, "households", householdId), {
     symptomLog: arrayUnion({ symptom, byName, at: Date.now() }),

@@ -333,23 +333,39 @@ button {
   color: white;
 }
 
-#role-card p {
-  margin: 0;
-  line-height: 1.6;
+.eyebrow {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0 0 4px;
 }
 
-.todo-summary-link {
+.icon-card {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 12px;
+  align-items: flex-start;
   text-decoration: none;
-  color: #222;
-  font-size: 0.9rem;
+  color: inherit;
   cursor: pointer;
 }
 
-.todo-summary-link .arrow {
-  color: #999;
+.icon-card-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.icon-card-title {
+  font-weight: 600;
+  margin: 0 0 2px;
+  font-size: 0.95rem;
+  color: #222;
+}
+
+.icon-card-body {
+  margin: 0;
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 /* 증상가이드 */

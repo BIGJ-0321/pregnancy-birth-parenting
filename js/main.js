@@ -13,10 +13,18 @@ import {
   toggleChecklistItem,
   addSymptomRecord,
   getLatestActivity,
+  saveNextCheckup,
 } from "./household.js";
 import { SITUATION_TAGS } from "./tags.js";
-import { calcPregnancyWeek, dueDateFromWeek } from "./pregnancy.js";
-import { getWeeklyInfo, getChecklistForWeek, getDadTip, MEDICAL_DISCLAIMER, CHECKLIST_ITEMS } from "./weeklyContent.js";
+import { calcPregnancyWeek, dueDateFromWeek, daysUntil } from "./pregnancy.js";
+import {
+  getWeeklyInfo,
+  getChecklistForWeek,
+  getDadTip,
+  getMomCaution,
+  MEDICAL_DISCLAIMER,
+  CHECKLIST_ITEMS,
+} from "./weeklyContent.js";
 import { SYMPTOMS } from "./symptomsContent.js";
 import { CANIDO_ITEMS } from "./canidoContent.js";
 
@@ -244,7 +252,11 @@ const weekBabyInfoEl = document.getElementById("week-baby-info");
 const partnerFeedEl = document.getElementById("partner-feed");
 const roleMomBtn = document.getElementById("role-mom-btn");
 const roleDadBtn = document.getElementById("role-dad-btn");
-const roleCardTextEl = document.getElementById("role-card-text");
+const roleCardMainTitleEl = document.getElementById("role-card-main-title");
+const roleCardMainTextEl = document.getElementById("role-card-main-text");
+const roleCardCautionTitleEl = document.getElementById("role-card-caution-title");
+const roleCardCautionTextEl = document.getElementById("role-card-caution-text");
+const checkupCardTextEl = document.getElementById("checkup-card-text");
 const todoSummaryTextEl = document.getElementById("todo-summary-text");
 const disclaimerEl = document.getElementById("disclaimer-text");
 disclaimerEl.textContent = MEDICAL_DISCLAIMER;
@@ -263,8 +275,15 @@ function setRole(role) {
 }
 
 const roleToggleEl = document.querySelector(".role-toggle");
-const roleCardEl = document.getElementById("role-card");
+const roleCardMainEl = document.getElementById("role-card-main");
+const roleCardCautionEl = document.getElementById("role-card-caution");
+const checkupCardEl = document.getElementById("checkup-card");
 const todoSummaryLinkEl = document.getElementById("todo-summary-link");
+
+checkupCardEl.addEventListener("click", (e) => {
+  e.preventDefault();
+  switchView("todos");
+});
 
 // role-toggle/todo-summary-link/partner-feed는 CSS에서 display:flex를 고정으로 주기 때문에,
 // hidden 속성 대신 style.display로 직접 토글해야 확실히 감춰짐
@@ -281,13 +300,17 @@ function renderHome(household) {
     weekBabyInfoEl.textContent = "혹시 출산했다면, 다음 업데이트에서 아기 개월수 모드로 전환하는 기능을 추가할게.";
     setVisible(partnerFeedEl, false);
     setVisible(roleToggleEl, false);
-    roleCardEl.hidden = true;
+    roleCardMainEl.hidden = true;
+    roleCardCautionEl.hidden = true;
+    setVisible(checkupCardEl, false);
     setVisible(todoSummaryLinkEl, false);
     return;
   }
 
   setVisible(roleToggleEl, true);
-  roleCardEl.hidden = false;
+  roleCardMainEl.hidden = false;
+  roleCardCautionEl.hidden = false;
+  setVisible(checkupCardEl, true);
   setVisible(todoSummaryLinkEl, true);
 
   const info = getWeeklyInfo(week);
@@ -305,31 +328,74 @@ function renderHome(household) {
   }
 
   renderRoleCard(household);
+  renderCheckupCard(household);
 
   const items = getChecklistForWeek(week, household.tags || []);
   const state = household.checklistState || {};
-  const remaining = items.filter((item) => !state[item.id]?.done).length;
+  const remaining = items.filter((item) => !state[item.id]?.done);
   todoSummaryTextEl.textContent =
-    remaining > 0 ? `이번 주 할 일 ${remaining}개 남음` : "이번 주 할 일을 모두 끝냈어요";
+    remaining.length > 0
+      ? `${remaining[0].label}${remaining.length > 1 ? ` 외 ${remaining.length - 1}건` : ""}`
+      : "이번 주 할 일을 모두 끝냈어요";
 }
 
 function renderRoleCard(household) {
   const { week, isBorn } = calcPregnancyWeek(household.dueDate);
   if (isBorn) return;
   if (currentRole === "mom") {
-    roleCardTextEl.textContent = getWeeklyInfo(week).mom;
+    roleCardMainTitleEl.textContent = "내 몸의 변화";
+    roleCardMainTextEl.textContent = getWeeklyInfo(week).mom;
+    roleCardCautionTitleEl.textContent = "오늘 조심할 것";
+    roleCardCautionTextEl.textContent = getMomCaution(week);
   } else {
-    roleCardTextEl.textContent = getDadTip(week);
+    roleCardMainTitleEl.textContent = "이번 주 아내 변화";
+    roleCardMainTextEl.textContent = getWeeklyInfo(week).mom;
+    roleCardCautionTitleEl.textContent = "오늘 도와줄 것";
+    roleCardCautionTextEl.textContent = getDadTip(week);
   }
+}
+
+function renderCheckupCard(household) {
+  if (!household.nextCheckupDate) {
+    checkupCardTextEl.textContent = "검진일을 등록해줘 →";
+    return;
+  }
+  const d = daysUntil(household.nextCheckupDate);
+  const dateLabel = new Date(household.nextCheckupDate + "T00:00:00").toLocaleDateString("ko-KR", {
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+  });
+  const dDayLabel = d === 0 ? "D-day" : d > 0 ? `D-${d}` : "지남";
+  checkupCardTextEl.textContent = `${dateLabel} · ${dDayLabel}`;
 }
 
 // ---------- 할일 · 검진 ----------
 
 const todoListEl = document.getElementById("todo-list");
 const todoEmptyEl = document.getElementById("todo-empty");
+const checkupDateInput = document.getElementById("checkup-date-input");
+const saveCheckupBtn = document.getElementById("save-checkup-btn");
+const checkupSavedTextEl = document.getElementById("checkup-saved-text");
 const ASSIGNEE_LABEL = { mom: "엄", dad: "아", both: "둘" };
 
+saveCheckupBtn.addEventListener("click", async () => {
+  if (!checkupDateInput.value || !lastHousehold) return;
+  saveCheckupBtn.disabled = true;
+  try {
+    await saveNextCheckup(lastHousehold.id, checkupDateInput.value);
+    checkupSavedTextEl.textContent = "저장됐어요.";
+  } catch (err) {
+    checkupSavedTextEl.textContent = "저장 실패: " + err.message;
+  } finally {
+    saveCheckupBtn.disabled = false;
+  }
+});
+
 function renderTodos(household) {
+  checkupDateInput.value = household.nextCheckupDate || "";
+  checkupSavedTextEl.textContent = "";
+
   const { week, isBorn } = calcPregnancyWeek(household.dueDate);
   if (isBorn) {
     todoListEl.innerHTML = "";

@@ -70,6 +70,7 @@
 
     <main id="view-home" class="view">
       <div class="card" id="week-result-section">
+        <p class="eyebrow">오늘의 가이드</p>
         <h2 id="week-result-title"></h2>
         <p class="baby-info" id="week-baby-info"></p>
       </div>
@@ -81,13 +82,36 @@
         <button id="role-dad-btn" class="role-btn">아빠</button>
       </div>
 
-      <div class="card" id="role-card">
-        <p id="role-card-text"></p>
+      <div class="card icon-card" id="role-card-main">
+        <span class="icon-card-icon">💗</span>
+        <div>
+          <p class="icon-card-title" id="role-card-main-title"></p>
+          <p class="icon-card-body" id="role-card-main-text"></p>
+        </div>
       </div>
 
-      <a href="#" id="todo-summary-link" class="card todo-summary-link">
-        <span id="todo-summary-text"></span>
-        <span class="arrow">→</span>
+      <div class="card icon-card" id="role-card-caution">
+        <span class="icon-card-icon">⚠️</span>
+        <div>
+          <p class="icon-card-title" id="role-card-caution-title"></p>
+          <p class="icon-card-body" id="role-card-caution-text"></p>
+        </div>
+      </div>
+
+      <a href="#" id="checkup-card" class="card icon-card">
+        <span class="icon-card-icon">📅</span>
+        <div>
+          <p class="icon-card-title">다음 검진</p>
+          <p class="icon-card-body" id="checkup-card-text"></p>
+        </div>
+      </a>
+
+      <a href="#" id="todo-summary-link" class="card icon-card">
+        <span class="icon-card-icon">📋</span>
+        <div>
+          <p class="icon-card-title">할 일</p>
+          <p class="icon-card-body" id="todo-summary-text"></p>
+        </div>
       </a>
 
       <p class="disclaimer" id="disclaimer-text"></p>
@@ -112,6 +136,17 @@
 
     <main id="view-todos" class="view" hidden>
       <h2>할 일 · 검진</h2>
+
+      <div class="card">
+        <p class="field-label" style="margin-top:0;">다음 검진일</p>
+        <div class="join-row">
+          <input id="checkup-date-input" type="date" />
+          <button id="save-checkup-btn">저장</button>
+        </div>
+        <p id="checkup-saved-text" class="muted" style="margin-top:8px;"></p>
+      </div>
+
+      <p class="field-label">이번 주 할 일</p>
       <ul id="todo-list" class="checklist-list"></ul>
       <p id="todo-empty" class="muted" hidden>이번 주에 해당하는 항목이 없어요.</p>
     </main>

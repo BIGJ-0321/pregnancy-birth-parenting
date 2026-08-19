@@ -88,6 +88,18 @@ export function getDadTip(week) {
   return DAD_TIPS[trimester];
 }
 
+// 트라이메스터별 "오늘 조심할 것" (엄마 관점)
+export const MOM_CAUTIONS = [
+  "입덧과 피로감이 심할 수 있는 시기예요. 무리하지 말고 충분히 쉬어주세요.",
+  "체중이 늘면서 허리와 골반에 부담이 갈 수 있어요. 무거운 물건은 피해주세요.",
+  "몸이 무겁고 부종이 생기기 쉬운 시기예요. 규칙적인 배 뭉침, 이슬, 양막파수 같은 진통 신호를 잘 살펴보세요.",
+];
+
+export function getMomCaution(week) {
+  const trimester = week <= 13 ? 0 : week <= 27 ? 1 : 2;
+  return MOM_CAUTIONS[trimester];
+}
+
 export function getWeeklyInfo(week) {
   const idx = Math.min(Math.max(week, 1), WEEKLY_INFO.length) - 1;
   return WEEKLY_INFO[idx];

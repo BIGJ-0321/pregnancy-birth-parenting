@@ -44,6 +44,13 @@ export function dueDateFromWeek(week, today = new Date()) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+// 오늘부터 특정 날짜까지 며칠 남았는지 (지났으면 음수)
+export function daysUntil(dateStr, today = new Date()) {
+  const target = new Date(dateStr + "T00:00:00");
+  const msPerDay = 1000 * 60 * 60 * 24;
+  return Math.round((target - stripTime(today)) / msPerDay);
+}
+
 function stripTime(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
