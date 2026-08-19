@@ -177,6 +177,23 @@ button {
   color: #1a4fc4;
 }
 
+.week-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dday-badge {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1a4fc4;
+  background: #e8f0fe;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
 .baby-info {
   margin: 10px 0 0;
   line-height: 1.5;

@@ -354,6 +354,7 @@ switchView("home");
 // ---------- 홈 화면 ----------
 
 const weekResultTitleEl = document.getElementById("week-result-title");
+const weekDdayBadgeEl = document.getElementById("week-dday-badge");
 const weekBabyInfoEl = document.getElementById("week-baby-info");
 const partnerFeedEl = document.getElementById("partner-feed");
 const roleMomBtn = document.getElementById("role-mom-btn");
@@ -403,6 +404,7 @@ function renderHome(household) {
 
   if (isBorn) {
     weekResultTitleEl.textContent = "출산 예정일이 지났어요";
+    weekDdayBadgeEl.textContent = "";
     weekBabyInfoEl.textContent = "혹시 출산했다면, 다음 업데이트에서 아기 개월수 모드로 전환하는 기능을 추가할게.";
     setVisible(partnerFeedEl, false);
     setVisible(roleToggleEl, false);
@@ -421,6 +423,8 @@ function renderHome(household) {
 
   const info = getWeeklyInfo(week);
   weekResultTitleEl.textContent = `임신 ${week}주 ${dayOfWeek}일차`;
+  const dToDue = daysUntil(household.dueDate);
+  weekDdayBadgeEl.textContent = dToDue >= 0 ? `예정일 D-${dToDue}` : `예정일 D+${-dToDue}`;
   weekBabyInfoEl.textContent = info.baby;
 
   const labels = {};
