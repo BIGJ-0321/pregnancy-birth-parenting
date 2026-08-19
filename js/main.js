@@ -1,4 +1,4 @@
-import { auth, googleProvider } from "./firebase.js?v=2";
+import { auth, googleProvider } from "./firebase.js?v=3";
 import {
   signInWithPopup,
   signOut,
@@ -16,9 +16,9 @@ import {
   saveNextCheckup,
   saveProfile,
   setMemberRole,
-} from "./household.js?v=2";
-import { SITUATION_TAGS } from "./tags.js?v=2";
-import { calcPregnancyWeek, dueDateFromWeek, dueDateFromLMP, daysUntil } from "./pregnancy.js?v=2";
+} from "./household.js?v=3";
+import { SITUATION_TAGS } from "./tags.js?v=3";
+import { calcPregnancyWeek, dueDateFromWeek, dueDateFromLMP, daysUntil } from "./pregnancy.js?v=3";
 import {
   getWeeklyInfo,
   getChecklistForWeek,
@@ -26,9 +26,9 @@ import {
   getMomCaution,
   MEDICAL_DISCLAIMER,
   CHECKLIST_ITEMS,
-} from "./weeklyContent.js?v=2";
-import { SYMPTOMS } from "./symptomsContent.js?v=2";
-import { CANIDO_ITEMS } from "./canidoContent.js?v=2";
+} from "./weeklyContent.js?v=3";
+import { SYMPTOMS } from "./symptomsContent.js?v=3";
+import { CANIDO_ITEMS } from "./canidoContent.js?v=3";
 
 // ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 

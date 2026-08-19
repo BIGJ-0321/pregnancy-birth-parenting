@@ -262,6 +262,10 @@ input::placeholder {
   content: "🦌 ";
 }
 
+body[data-role="dad"] .baby-info::before {
+  content: "🦍 ";
+}
+
 .checklist-list {
   list-style: none;
   padding: 0;
