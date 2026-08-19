@@ -1,12 +1,34 @@
+:root {
+  --bg: #f5ede0;
+  --card-bg: #fbf3e7;
+  --surface-2: #f0e6d2;
+  --text-primary: #4a3728;
+  --text-secondary: #8b7355;
+  --text-muted: #a89478;
+  --border: #e4d5bc;
+  --border-strong: #c9b594;
+  --accent: #4a6b3e;
+  --accent-bg: #dce8d0;
+  --accent-dark: #4a3728;
+  --danger: #a13b2e;
+  --danger-bg: #f5dcd3;
+  --warning: #8b5e17;
+  --warning-bg: #f5e6c8;
+  --mom: #a13b2e;
+  --mom-bg: #f5dcd3;
+  --dad: #8b5e17;
+  --dad-bg: #f5e6c8;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #fafafa;
-  color: #222;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
   max-width: 480px;
   margin-inline: auto;
   padding: 24px 16px 24px;
@@ -22,45 +44,46 @@ h1 {
 }
 
 .subtitle {
-  color: #777;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   margin-top: 0;
 }
 
 .card {
-  background: white;
-  border-radius: 12px;
+  background: var(--card-bg);
+  border-radius: 16px;
   padding: 20px;
   margin-top: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border);
 }
 
 button {
+  font-family: inherit;
   font-size: 1rem;
   padding: 12px 20px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
 }
 
 #login-btn {
-  background: #4285f4;
+  background: var(--accent);
   color: white;
 }
 
 #logout-btn {
-  background: #eee;
-  color: #333;
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 #auth-status {
   margin-top: 12px;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 #create-household-btn {
-  background: #34a853;
+  background: var(--accent);
   color: white;
   width: 100%;
 }
@@ -75,19 +98,22 @@ button {
   flex: 1;
   min-width: 0;
   padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: white;
   font-size: 1rem;
   text-transform: uppercase;
+  font-family: inherit;
+  color: var(--text-primary);
 }
 
 #join-household-btn {
-  background: #eee;
-  color: #333;
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 .error {
-  color: #d93025;
+  color: var(--danger);
   font-size: 0.9rem;
   margin-top: 12px;
 }
@@ -96,9 +122,10 @@ button {
   font-size: 1.6rem;
   font-weight: bold;
   letter-spacing: 4px;
-  background: #f1f3f4;
+  background: var(--surface-2);
+  color: var(--text-primary);
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   text-align: center;
   margin-top: 8px;
 }
@@ -108,15 +135,19 @@ button {
   font-size: 0.9rem;
   margin-top: 20px;
   margin-bottom: 6px;
+  color: var(--text-primary);
 }
 
 #due-date-input,
 #current-week-input {
   width: 100%;
   padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: white;
+  font-family: inherit;
   font-size: 1rem;
+  color: var(--text-primary);
 }
 
 .radio-row {
@@ -150,10 +181,11 @@ button {
   gap: 6px;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-strong);
   font-size: 0.9rem;
   cursor: pointer;
   user-select: none;
+  color: var(--text-primary);
 }
 
 .tag-chip input {
@@ -161,20 +193,20 @@ button {
 }
 
 .tag-chip.checked {
-  background: #e8f0fe;
-  border-color: #4285f4;
-  color: #1a4fc4;
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 #save-onboarding-btn {
   margin-top: 24px;
-  background: #4285f4;
+  background: var(--accent);
   color: white;
   width: 100%;
 }
 
 #week-result-title {
-  color: #1a4fc4;
+  color: var(--text-primary);
 }
 
 .week-title-row {
@@ -188,8 +220,8 @@ button {
   flex-shrink: 0;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #1a4fc4;
-  background: #e8f0fe;
+  color: var(--accent);
+  background: var(--accent-bg);
   padding: 4px 10px;
   border-radius: 999px;
 }
@@ -197,10 +229,11 @@ button {
 .baby-info {
   margin: 10px 0 0;
   line-height: 1.5;
+  color: var(--text-secondary);
 }
 
 .baby-info::before {
-  content: "👶 ";
+  content: "🦌 ";
 }
 
 .checklist-list {
@@ -217,8 +250,8 @@ button {
   align-items: flex-start;
   gap: 10px;
   padding: 10px;
-  border-radius: 8px;
-  background: #f8f9fa;
+  border-radius: 10px;
+  background: var(--surface-2);
 }
 
 .checklist-list input[type="checkbox"] {
@@ -226,17 +259,19 @@ button {
   height: 20px;
   margin-top: 2px;
   flex-shrink: 0;
+  accent-color: var(--accent);
 }
 
 .checklist-list label {
   flex: 1;
   cursor: pointer;
+  color: var(--text-primary);
 }
 
 .checklist-list .required-badge {
   font-size: 0.7rem;
-  color: #d93025;
-  border: 1px solid #d93025;
+  color: var(--danger);
+  border: 1px solid var(--danger);
   border-radius: 4px;
   padding: 1px 6px;
   margin-left: 6px;
@@ -244,17 +279,17 @@ button {
 
 .checklist-list li.checked label {
   text-decoration: line-through;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .muted {
-  color: #999;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
 .disclaimer {
   font-size: 0.8rem;
-  color: #999;
+  color: var(--text-muted);
   text-align: center;
   margin-top: 24px;
   line-height: 1.4;
@@ -270,24 +305,26 @@ button {
 .choice-btn {
   width: 100%;
   padding: 16px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
   background: white;
+  font-family: inherit;
   font-size: 1rem;
   text-align: left;
+  color: var(--text-primary);
 }
 
 .choice-btn.selected {
-  border-color: #4285f4;
-  background: #e8f0fe;
-  color: #1a4fc4;
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 .text-link {
   display: block;
   margin: 12px auto 0;
   background: transparent;
-  color: #999;
+  color: var(--text-muted);
   font-size: 0.8rem;
   padding: 8px;
 }
@@ -296,6 +333,7 @@ button {
 
 .view h2 {
   margin-bottom: 2px;
+  color: var(--text-primary);
 }
 
 .view .subtitle {
@@ -308,8 +346,8 @@ button {
   left: 0;
   right: 0;
   display: flex;
-  background: white;
-  border-top: 1px solid #e5e5e5;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
   max-width: 480px;
   margin-inline: auto;
   padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
@@ -320,8 +358,9 @@ button {
   background: transparent;
   border: none;
   padding: 14px 4px 6px;
+  font-family: inherit;
   font-size: 0.7rem;
-  color: #999;
+  color: var(--text-muted);
   border-radius: 0;
   display: flex;
   flex-direction: column;
@@ -330,7 +369,7 @@ button {
 }
 
 .tab-btn.active {
-  color: #1a4fc4;
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -342,9 +381,9 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #e8f0fe;
-  color: #1a4fc4;
-  border-radius: 10px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-radius: 12px;
   padding: 10px 14px;
   margin-top: 14px;
   font-size: 0.85rem;
@@ -353,7 +392,7 @@ button {
 .role-toggle {
   display: flex;
   gap: 4px;
-  background: #eee;
+  background: var(--surface-2);
   border-radius: 999px;
   padding: 3px;
   margin-top: 16px;
@@ -362,20 +401,21 @@ button {
 .role-btn {
   flex: 1;
   background: transparent;
-  color: #555;
+  font-family: inherit;
+  color: var(--text-secondary);
   border-radius: 999px;
   padding: 8px;
   font-size: 0.9rem;
 }
 
 .role-btn.active {
-  background: #222;
-  color: white;
+  background: var(--accent-dark);
+  color: var(--bg);
 }
 
 .eyebrow {
   font-size: 0.75rem;
-  color: #999;
+  color: var(--text-muted);
   margin: 0 0 4px;
 }
 
@@ -398,12 +438,12 @@ button {
   font-weight: 600;
   margin: 0 0 2px;
   font-size: 0.95rem;
-  color: #222;
+  color: var(--text-primary);
 }
 
 .icon-card-body {
   margin: 0;
-  color: #555;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -418,8 +458,9 @@ button {
   display: flex;
   gap: 10px;
   padding: 12px;
-  border-radius: 10px;
-  background: #f8f9fa;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text-primary);
   margin-top: 10px;
   line-height: 1.5;
   font-size: 0.9rem;
@@ -431,13 +472,13 @@ button {
 }
 
 .symptom-tier.tier-warning {
-  background: #fef7e0;
-  color: #7a5b00;
+  background: var(--warning-bg);
+  color: var(--warning);
 }
 
 .symptom-tier.tier-danger {
-  background: #fce8e6;
-  color: #a10e0e;
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 .record-row {
@@ -446,11 +487,12 @@ button {
   gap: 8px;
   margin-top: 14px;
   font-size: 0.9rem;
-  color: #1a4fc4;
+  color: var(--accent);
 }
 
 .record-row.done {
-  color: #188038;
+  color: var(--accent);
+  font-weight: 600;
 }
 
 /* 이거 해도 돼 */
@@ -458,18 +500,21 @@ button {
 #canido-search {
   width: 100%;
   padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: white;
+  font-family: inherit;
   font-size: 1rem;
   margin-top: 4px;
+  color: var(--text-primary);
 }
 
 .canido-result-card {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  background: #f8f9fa;
-  border-radius: 10px;
+  background: var(--surface-2);
+  border-radius: 12px;
   padding: 14px;
   margin-top: 14px;
 }
@@ -483,18 +528,18 @@ button {
 }
 
 .canido-badge.ok {
-  background: #e6f4ea;
-  color: #188038;
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 .canido-badge.caution {
-  background: #fef7e0;
-  color: #7a5b00;
+  background: var(--warning-bg);
+  color: var(--warning);
 }
 
 .canido-badge.avoid {
-  background: #fce8e6;
-  color: #a10e0e;
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 /* 할일 · 검진 */
@@ -512,16 +557,16 @@ button {
 }
 
 .assignee-badge.mom {
-  background: #fce8e6;
-  color: #a10e0e;
+  background: var(--mom-bg);
+  color: var(--mom);
 }
 
 .assignee-badge.dad {
-  background: #e8f0fe;
-  color: #1a4fc4;
+  background: var(--dad-bg);
+  color: var(--dad);
 }
 
 .assignee-badge.both {
-  background: #e6f4ea;
-  color: #188038;
+  background: var(--accent-bg);
+  color: var(--accent);
 }
