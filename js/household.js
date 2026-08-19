@@ -92,6 +92,13 @@ export async function toggleChecklistItem(householdId, itemId, checked, byName) 
   });
 }
 
+// roles[uid] = "mom" | "dad" - 이 계정을 쓰는 사람이 어느 쪽인지
+export async function setMemberRole(householdId, uid, role) {
+  await updateDoc(doc(db, "households", householdId), {
+    [`roles.${uid}`]: role,
+  });
+}
+
 export async function saveProfile(householdId, { age, dueDate }) {
   await updateDoc(doc(db, "households", householdId), {
     momAge: age,

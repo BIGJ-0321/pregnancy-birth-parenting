@@ -24,48 +24,77 @@
     <p id="auth-status">확인 중...</p>
   </div>
 
-  <div class="card" id="household-setup-section" hidden>
-    <h2>배우자와 연결하기</h2>
-    <p>둘 중 한 명이 먼저 "가구 만들기"를 누르고, 다른 한 명은 그 초대 코드로 "참여하기"를 눌러줘.</p>
+  <div id="onboarding-wizard" hidden>
 
-    <button id="create-household-btn">가구 만들기</button>
-
-    <div class="join-row">
-      <input id="invite-code-input" type="text" placeholder="초대 코드 입력 (예: AB12CD)" maxlength="6" />
-      <button id="join-household-btn">참여하기</button>
-    </div>
-    <p id="household-error" class="error" hidden></p>
-  </div>
-
-  <div class="card" id="household-connected-section" hidden>
-    <h2>연결 완료</h2>
-    <p id="household-status"></p>
-    <p id="invite-code-display" class="invite-code"></p>
-  </div>
-
-  <div class="card" id="onboarding-section" hidden>
-    <h2>기본 정보 입력</h2>
-
-    <div class="radio-row">
-      <label><input type="radio" name="due-mode" value="due-date" checked /> 출산 예정일을 알아요</label>
-      <label><input type="radio" name="due-mode" value="current-week" /> 예정일은 모르고 현재 주차만 알아요</label>
+    <div class="card wizard-step" id="step-role">
+      <h2>당신은 누구인가요?</h2>
+      <div class="choice-row">
+        <button class="choice-btn" data-role="mom">엄마</button>
+        <button class="choice-btn" data-role="dad">아빠</button>
+      </div>
     </div>
 
-    <div id="due-date-field">
-      <label class="field-label" for="due-date-input">출산 예정일</label>
-      <input id="due-date-input" type="date" />
+    <div class="card wizard-step" id="step-connect" hidden>
+      <h2>배우자가 먼저 시작했나요?</h2>
+      <div class="choice-row">
+        <button class="choice-btn" id="has-code-btn">네, 초대 코드가 있어요</button>
+        <button class="choice-btn" id="no-code-btn">아니요, 제가 처음이에요</button>
+      </div>
+
+      <div id="join-code-area" hidden>
+        <div class="join-row" style="margin-top:16px;">
+          <input id="wizard-invite-code-input" type="text" placeholder="초대 코드 입력 (예: AB12CD)" maxlength="6" />
+          <button id="wizard-join-btn">참여하기</button>
+        </div>
+      </div>
+      <p id="wizard-connect-error" class="error" hidden></p>
     </div>
 
-    <div id="current-week-field" hidden>
-      <label class="field-label" for="current-week-input">현재 임신 주차</label>
-      <input id="current-week-input" type="number" min="1" max="42" placeholder="예: 8" />
+    <div class="card wizard-step" id="step-due" hidden>
+      <h2>출산 예정일은 언제인가요?</h2>
+
+      <div class="radio-row">
+        <label><input type="radio" name="wizard-due-mode" value="due-date" checked /> 날짜를 알아요</label>
+        <label><input type="radio" name="wizard-due-mode" value="unknown" /> 예정일을 아직 몰라요</label>
+      </div>
+
+      <div id="wizard-due-date-field">
+        <input id="wizard-due-date-input" type="date" style="margin-top:10px;" />
+      </div>
+
+      <div id="wizard-unknown-field" hidden>
+        <div class="radio-row">
+          <label><input type="radio" name="wizard-unknown-mode" value="lmp" checked /> 마지막 생리 시작일로 계산할게요</label>
+          <label><input type="radio" name="wizard-unknown-mode" value="week" /> 임신 몇 주차인지 알아요</label>
+        </div>
+        <div id="wizard-lmp-field">
+          <input id="wizard-lmp-input" type="date" />
+        </div>
+        <div id="wizard-week-field" hidden>
+          <input id="wizard-week-input" type="number" min="1" max="42" placeholder="예: 8" />
+        </div>
+      </div>
+
+      <p class="field-label">해당하는 상황이 있으면 선택해줘 (없으면 넘어가도 돼)</p>
+      <div id="wizard-tags-list" class="tags-list"></div>
+
+      <button id="wizard-due-next-btn" style="margin-top:20px; width:100%; background:#4285f4; color:white;">다음</button>
+      <p id="wizard-due-error" class="error" hidden></p>
     </div>
 
-    <p class="field-label">해당하는 상황이 있으면 선택해줘 (없으면 그냥 넘어가도 돼)</p>
-    <div id="tags-list" class="tags-list"></div>
+    <div class="card wizard-step" id="step-invite" hidden>
+      <h2>배우자와 함께 사용할까요?</h2>
+      <div class="choice-row" id="invite-choice-row">
+        <button class="choice-btn" id="invite-now-btn">배우자 초대하기</button>
+        <button class="choice-btn" id="invite-later-btn">나중에 연결하기</button>
+      </div>
 
-    <button id="save-onboarding-btn">저장하고 시작하기</button>
-    <p id="onboarding-error" class="error" hidden></p>
+      <div id="invite-code-area" hidden>
+        <p class="invite-code" id="wizard-invite-code-display"></p>
+        <button id="wizard-finish-btn" style="margin-top:16px; width:100%; background:#4285f4; color:white;">시작하기</button>
+      </div>
+    </div>
+
   </div>
 
   <div id="app-shell" hidden>
@@ -153,6 +182,20 @@
 
     <main id="view-more" class="view" hidden>
       <h2>MY</h2>
+
+      <div class="card">
+        <p class="field-label" style="margin-top:0;">내 역할</p>
+        <div class="choice-row" id="settings-role-row">
+          <button class="choice-btn" data-role="mom">엄마</button>
+          <button class="choice-btn" data-role="dad">아빠</button>
+        </div>
+      </div>
+
+      <div class="card" id="spouse-status-card">
+        <p class="field-label" style="margin-top:0;">배우자 연결</p>
+        <p id="spouse-status-text" class="muted"></p>
+        <p class="invite-code" id="spouse-invite-code" hidden></p>
+      </div>
 
       <div class="card">
         <p class="field-label" style="margin-top:0;">내 정보</p>

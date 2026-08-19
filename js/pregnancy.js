@@ -31,6 +31,17 @@ export function calcBabyAgeMonths(birthDateStr, today = new Date()) {
   return { months: Math.max(months, 0), days: Math.max(days, 0) };
 }
 
+// 마지막 생리 시작일(LMP) + 280일 = 예정일
+export function dueDateFromLMP(lmpDateStr) {
+  const lmp = new Date(lmpDateStr + "T00:00:00");
+  const due = new Date(lmp.getFullYear(), lmp.getMonth(), lmp.getDate() + PREGNANCY_DAYS);
+
+  const yyyy = due.getFullYear();
+  const mm = String(due.getMonth() + 1).padStart(2, "0");
+  const dd = String(due.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 // 현재 주차(예: 8주차 시작)를 기준으로 역산한 예정일을 YYYY-MM-DD로 반환
 export function dueDateFromWeek(week, today = new Date()) {
   const daysPregnant = (week - 1) * 7;

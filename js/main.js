@@ -15,9 +15,10 @@ import {
   getLatestActivity,
   saveNextCheckup,
   saveProfile,
+  setMemberRole,
 } from "./household.js";
 import { SITUATION_TAGS } from "./tags.js";
-import { calcPregnancyWeek, dueDateFromWeek, daysUntil } from "./pregnancy.js";
+import { calcPregnancyWeek, dueDateFromWeek, dueDateFromLMP, daysUntil } from "./pregnancy.js";
 import {
   getWeeklyInfo,
   getChecklistForWeek,
@@ -37,32 +38,13 @@ const logoutBtn = document.getElementById("logout-btn");
 const statusEl = document.getElementById("auth-status");
 const appLogoutBtn = document.getElementById("app-logout-btn");
 
-const householdSetupSection = document.getElementById("household-setup-section");
-const householdConnectedSection = document.getElementById("household-connected-section");
-const createHouseholdBtn = document.getElementById("create-household-btn");
-const joinHouseholdBtn = document.getElementById("join-household-btn");
-const inviteCodeInput = document.getElementById("invite-code-input");
-const householdErrorEl = document.getElementById("household-error");
-const householdStatusEl = document.getElementById("household-status");
-const inviteCodeDisplayEl = document.getElementById("invite-code-display");
-
-const onboardingSection = document.getElementById("onboarding-section");
-const dueDateInput = document.getElementById("due-date-input");
-const dueDateField = document.getElementById("due-date-field");
-const currentWeekInput = document.getElementById("current-week-input");
-const currentWeekField = document.getElementById("current-week-field");
-const dueModeRadios = document.querySelectorAll('input[name="due-mode"]');
-const tagsListEl = document.getElementById("tags-list");
-const saveOnboardingBtn = document.getElementById("save-onboarding-btn");
-const onboardingErrorEl = document.getElementById("onboarding-error");
-
 const appShell = document.getElementById("app-shell");
 const pageHeaderEl = document.getElementById("page-header");
 
+const onboardingWizardEl = document.getElementById("onboarding-wizard");
+
 let currentHouseholdId = null;
 let unsubscribeHousehold = null;
-
-renderTagChips();
 
 loginBtn.addEventListener("click", () => {
   signInWithPopup(auth, googleProvider).catch((err) => {
@@ -77,101 +59,6 @@ logoutBtn.addEventListener("click", () => {
 appLogoutBtn.addEventListener("click", () => {
   signOut(auth);
 });
-
-createHouseholdBtn.addEventListener("click", async () => {
-  const uid = auth.currentUser.uid;
-  createHouseholdBtn.disabled = true;
-  try {
-    const { householdId } = await createHousehold(uid);
-    currentHouseholdId = householdId;
-    watchHousehold(householdId);
-  } catch (err) {
-    showHouseholdError(err.message);
-  } finally {
-    createHouseholdBtn.disabled = false;
-  }
-});
-
-joinHouseholdBtn.addEventListener("click", async () => {
-  const uid = auth.currentUser.uid;
-  const code = inviteCodeInput.value;
-  if (!code) return;
-  joinHouseholdBtn.disabled = true;
-  try {
-    const householdId = await joinHousehold(uid, code);
-    currentHouseholdId = householdId;
-    watchHousehold(householdId);
-  } catch (err) {
-    showHouseholdError(err.message);
-  } finally {
-    joinHouseholdBtn.disabled = false;
-  }
-});
-
-for (const radio of dueModeRadios) {
-  radio.addEventListener("change", () => {
-    const mode = document.querySelector('input[name="due-mode"]:checked').value;
-    dueDateField.hidden = mode !== "due-date";
-    currentWeekField.hidden = mode !== "current-week";
-  });
-}
-
-saveOnboardingBtn.addEventListener("click", async () => {
-  const mode = document.querySelector('input[name="due-mode"]:checked').value;
-  let dueDate;
-
-  if (mode === "due-date") {
-    if (!dueDateInput.value) {
-      showOnboardingError("출산 예정일을 입력해줘.");
-      return;
-    }
-    dueDate = dueDateInput.value;
-  } else {
-    const week = Number(currentWeekInput.value);
-    if (!week || week < 1 || week > 42) {
-      showOnboardingError("현재 주차를 1~42 사이로 입력해줘.");
-      return;
-    }
-    dueDate = dueDateFromWeek(week);
-  }
-
-  const selectedTags = Array.from(
-    tagsListEl.querySelectorAll("input[type=checkbox]:checked")
-  ).map((el) => el.value);
-
-  saveOnboardingBtn.disabled = true;
-  try {
-    await saveHouseholdSetup(currentHouseholdId, { dueDate, tags: selectedTags });
-  } catch (err) {
-    showOnboardingError(err.message);
-  } finally {
-    saveOnboardingBtn.disabled = false;
-  }
-});
-
-function renderTagChips() {
-  tagsListEl.innerHTML = "";
-  for (const tag of SITUATION_TAGS) {
-    const label = document.createElement("label");
-    label.className = "tag-chip";
-    label.innerHTML = `<input type="checkbox" value="${tag.id}" /> ${tag.label}`;
-    const checkbox = label.querySelector("input");
-    checkbox.addEventListener("change", () => {
-      label.classList.toggle("checked", checkbox.checked);
-    });
-    tagsListEl.appendChild(label);
-  }
-}
-
-function showHouseholdError(message) {
-  householdErrorEl.textContent = message;
-  householdErrorEl.hidden = false;
-}
-
-function showOnboardingError(message) {
-  onboardingErrorEl.textContent = message;
-  onboardingErrorEl.hidden = false;
-}
 
 function currentUserName() {
   return auth.currentUser?.displayName || "배우자";
@@ -191,22 +78,14 @@ function watchHousehold(householdId) {
 }
 
 function renderHousehold(household) {
-  householdSetupSection.hidden = true;
-  householdConnectedSection.hidden = false;
+  const uid = auth.currentUser.uid;
+  const myRole = household.roles?.[uid];
 
-  const memberCount = household.members.length;
-  householdStatusEl.textContent =
-    memberCount >= 2
-      ? "배우자와 연결됐어요!"
-      : "가구가 만들어졌어요. 아래 코드를 배우자에게 알려주세요.";
-  inviteCodeDisplayEl.textContent = household.inviteCode;
-
-  if (household.dueDate) {
-    // 셋업 다 끝났으면 로그인/가구연결 카드는 접어두고 바로 앱 화면으로
+  if (household.dueDate && myRole) {
+    // 셋업 다 끝났으면 온보딩 마법사는 접어두고 바로 앱 화면으로
     pageHeaderEl.hidden = true;
     authSectionEl.hidden = true;
-    householdConnectedSection.hidden = true;
-    onboardingSection.hidden = true;
+    onboardingWizardEl.hidden = true;
     appShell.hidden = false;
     renderHome(household);
     renderTodos(household);
@@ -214,9 +93,230 @@ function renderHousehold(household) {
   } else {
     pageHeaderEl.hidden = false;
     authSectionEl.hidden = false;
-    onboardingSection.hidden = false;
     appShell.hidden = true;
+    onboardingWizardEl.hidden = false;
+
+    if (!myRole) {
+      // 초대 코드로 막 들어왔거나(예정일은 이미 있음), 예전 데이터라 역할만 없는 경우 - 역할만 물어보고 끝
+      startWizard("roleOnly", household.id);
+    } else {
+      // 역할은 있는데 예정일이 없는 드문 경우 (예정일 저장 도중 새로고침 등) - 예정일 단계부터 다시
+      wizardHouseholdId = household.id;
+      wizardRole = myRole;
+      wizardMode = "fresh";
+      goToStep("due");
+    }
   }
+}
+
+// ---------- 온보딩 마법사 ----------
+
+const wizardSteps = {
+  role: document.getElementById("step-role"),
+  connect: document.getElementById("step-connect"),
+  due: document.getElementById("step-due"),
+  invite: document.getElementById("step-invite"),
+};
+
+const hasCodeBtn = document.getElementById("has-code-btn");
+const noCodeBtn = document.getElementById("no-code-btn");
+const joinCodeArea = document.getElementById("join-code-area");
+const wizardInviteCodeInput = document.getElementById("wizard-invite-code-input");
+const wizardJoinBtn = document.getElementById("wizard-join-btn");
+const wizardConnectErrorEl = document.getElementById("wizard-connect-error");
+
+const wizardDueModeRadios = document.querySelectorAll('input[name="wizard-due-mode"]');
+const wizardDueDateField = document.getElementById("wizard-due-date-field");
+const wizardDueDateInput = document.getElementById("wizard-due-date-input");
+const wizardUnknownField = document.getElementById("wizard-unknown-field");
+const wizardUnknownModeRadios = document.querySelectorAll('input[name="wizard-unknown-mode"]');
+const wizardLmpField = document.getElementById("wizard-lmp-field");
+const wizardLmpInput = document.getElementById("wizard-lmp-input");
+const wizardWeekField = document.getElementById("wizard-week-field");
+const wizardWeekInput = document.getElementById("wizard-week-input");
+const wizardTagsListEl = document.getElementById("wizard-tags-list");
+const wizardDueNextBtn = document.getElementById("wizard-due-next-btn");
+const wizardDueErrorEl = document.getElementById("wizard-due-error");
+
+const inviteNowBtn = document.getElementById("invite-now-btn");
+const inviteLaterBtn = document.getElementById("invite-later-btn");
+const inviteCodeArea = document.getElementById("invite-code-area");
+const wizardInviteCodeDisplayEl = document.getElementById("wizard-invite-code-display");
+const wizardFinishBtn = document.getElementById("wizard-finish-btn");
+
+let wizardMode = null; // "fresh" | "roleOnly"
+let wizardHouseholdId = null;
+let wizardRole = null;
+let wizardInviteCode = null;
+
+renderWizardTagChips();
+
+function startWizard(mode, householdId) {
+  wizardMode = mode;
+  wizardHouseholdId = householdId;
+  wizardRole = null;
+  goToStep("role");
+}
+
+function goToStep(name) {
+  for (const [key, el] of Object.entries(wizardSteps)) {
+    el.hidden = key !== name;
+  }
+}
+
+function renderWizardTagChips() {
+  wizardTagsListEl.innerHTML = "";
+  for (const tag of SITUATION_TAGS) {
+    const label = document.createElement("label");
+    label.className = "tag-chip";
+    label.innerHTML = `<input type="checkbox" value="${tag.id}" /> ${tag.label}`;
+    const checkbox = label.querySelector("input");
+    checkbox.addEventListener("change", () => {
+      label.classList.toggle("checked", checkbox.checked);
+    });
+    wizardTagsListEl.appendChild(label);
+  }
+}
+
+// 1단계: 역할
+document.querySelectorAll("#step-role .choice-btn").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    wizardRole = btn.dataset.role;
+    document.querySelectorAll("#step-role .choice-btn").forEach((b) => {
+      b.classList.toggle("selected", b === btn);
+    });
+
+    if (wizardMode === "roleOnly") {
+      try {
+        await setMemberRole(wizardHouseholdId, auth.currentUser.uid, wizardRole);
+        // household 구독이 바로 다시 렌더링하면서 앱 화면으로 넘어감
+      } catch (err) {
+        alert("저장 실패: " + err.message);
+      }
+    } else {
+      goToStep("connect");
+    }
+  });
+});
+
+// 2단계: 배우자 연결 확인
+hasCodeBtn.addEventListener("click", () => {
+  joinCodeArea.hidden = false;
+});
+
+noCodeBtn.addEventListener("click", () => {
+  goToStep("due");
+});
+
+wizardJoinBtn.addEventListener("click", async () => {
+  const code = wizardInviteCodeInput.value;
+  if (!code) return;
+  wizardJoinBtn.disabled = true;
+  try {
+    const uid = auth.currentUser.uid;
+    const householdId = await joinHousehold(uid, code);
+    await setMemberRole(householdId, uid, wizardRole);
+    currentHouseholdId = householdId;
+    watchHousehold(householdId);
+  } catch (err) {
+    wizardConnectErrorEl.textContent = err.message;
+    wizardConnectErrorEl.hidden = false;
+  } finally {
+    wizardJoinBtn.disabled = false;
+  }
+});
+
+// 3단계: 출산 예정일
+for (const radio of wizardDueModeRadios) {
+  radio.addEventListener("change", () => {
+    const mode = document.querySelector('input[name="wizard-due-mode"]:checked').value;
+    wizardDueDateField.hidden = mode !== "due-date";
+    wizardUnknownField.hidden = mode !== "unknown";
+  });
+}
+
+for (const radio of wizardUnknownModeRadios) {
+  radio.addEventListener("change", () => {
+    const mode = document.querySelector('input[name="wizard-unknown-mode"]:checked').value;
+    wizardLmpField.hidden = mode !== "lmp";
+    wizardWeekField.hidden = mode !== "week";
+  });
+}
+
+wizardDueNextBtn.addEventListener("click", async () => {
+  const mode = document.querySelector('input[name="wizard-due-mode"]:checked').value;
+  let dueDate;
+
+  if (mode === "due-date") {
+    if (!wizardDueDateInput.value) {
+      showWizardDueError("출산 예정일을 입력해줘.");
+      return;
+    }
+    dueDate = wizardDueDateInput.value;
+  } else {
+    const unknownMode = document.querySelector('input[name="wizard-unknown-mode"]:checked').value;
+    if (unknownMode === "lmp") {
+      if (!wizardLmpInput.value) {
+        showWizardDueError("마지막 생리 시작일을 입력해줘.");
+        return;
+      }
+      dueDate = dueDateFromLMP(wizardLmpInput.value);
+    } else {
+      const week = Number(wizardWeekInput.value);
+      if (!week || week < 1 || week > 42) {
+        showWizardDueError("현재 주차를 1~42 사이로 입력해줘.");
+        return;
+      }
+      dueDate = dueDateFromWeek(week);
+    }
+  }
+
+  const selectedTags = Array.from(
+    wizardTagsListEl.querySelectorAll("input[type=checkbox]:checked")
+  ).map((el) => el.value);
+
+  wizardDueNextBtn.disabled = true;
+  try {
+    const uid = auth.currentUser.uid;
+    if (!wizardHouseholdId) {
+      const { householdId, inviteCode } = await createHousehold(uid);
+      wizardHouseholdId = householdId;
+      wizardInviteCode = inviteCode;
+    }
+    await setMemberRole(wizardHouseholdId, uid, wizardRole);
+    await saveHouseholdSetup(wizardHouseholdId, { dueDate, tags: selectedTags });
+    goToStep("invite");
+  } catch (err) {
+    showWizardDueError(err.message);
+  } finally {
+    wizardDueNextBtn.disabled = false;
+  }
+});
+
+function showWizardDueError(message) {
+  wizardDueErrorEl.textContent = message;
+  wizardDueErrorEl.hidden = false;
+}
+
+// 4단계: 배우자 초대
+inviteNowBtn.addEventListener("click", () => {
+  inviteNowBtn.classList.add("selected");
+  inviteLaterBtn.classList.remove("selected");
+  inviteCodeArea.hidden = false;
+  wizardInviteCodeDisplayEl.textContent = wizardInviteCode;
+});
+
+inviteLaterBtn.addEventListener("click", () => {
+  finishWizard();
+});
+
+wizardFinishBtn.addEventListener("click", () => {
+  finishWizard();
+});
+
+function finishWizard() {
+  currentHouseholdId = wizardHouseholdId;
+  watchHousehold(wizardHouseholdId);
 }
 
 // ---------- 탭 전환 ----------
@@ -449,6 +549,10 @@ function renderTodos(household) {
 
 // ---------- 전체 (내 정보 / 로그아웃) ----------
 
+const settingsRoleRow = document.getElementById("settings-role-row");
+const spouseStatusTextEl = document.getElementById("spouse-status-text");
+const spouseInviteCodeEl = document.getElementById("spouse-invite-code");
+
 const settingsAgeInput = document.getElementById("settings-age-input");
 const settingsDueDateInput = document.getElementById("settings-due-date-input");
 const settingsDueDateField = document.getElementById("settings-due-date-field");
@@ -466,7 +570,32 @@ for (const radio of settingsDueModeRadios) {
   });
 }
 
+settingsRoleRow.querySelectorAll(".choice-btn").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    if (!lastHousehold) return;
+    try {
+      await setMemberRole(lastHousehold.id, auth.currentUser.uid, btn.dataset.role);
+    } catch (err) {
+      alert("저장 실패: " + err.message);
+    }
+  });
+});
+
 function renderSettings(household) {
+  const myRole = household.roles?.[auth.currentUser.uid];
+  settingsRoleRow.querySelectorAll(".choice-btn").forEach((btn) => {
+    btn.classList.toggle("selected", btn.dataset.role === myRole);
+  });
+
+  if (household.members.length >= 2) {
+    spouseStatusTextEl.textContent = "배우자와 연결됐어요.";
+    spouseInviteCodeEl.hidden = true;
+  } else {
+    spouseStatusTextEl.textContent = "아직 배우자가 연결되지 않았어요. 이 코드를 알려주세요:";
+    spouseInviteCodeEl.hidden = false;
+    spouseInviteCodeEl.textContent = household.inviteCode;
+  }
+
   settingsAgeInput.value = household.momAge || "";
   settingsDueDateInput.value = household.dueDate || "";
   settingsSavedTextEl.textContent = "";
@@ -637,8 +766,10 @@ onAuthStateChanged(auth, async (user) => {
         currentHouseholdId = householdId;
         watchHousehold(householdId);
       } else {
-        householdSetupSection.hidden = false;
-        householdConnectedSection.hidden = true;
+        pageHeaderEl.hidden = false;
+        appShell.hidden = true;
+        onboardingWizardEl.hidden = false;
+        startWizard("fresh", null);
       }
     } catch (err) {
       statusEl.textContent = `데이터를 불러오지 못했어요: ${err.message}`;
@@ -654,9 +785,7 @@ onAuthStateChanged(auth, async (user) => {
     logoutBtn.hidden = true;
     pageHeaderEl.hidden = false;
     authSectionEl.hidden = false;
-    householdSetupSection.hidden = true;
-    householdConnectedSection.hidden = true;
-    onboardingSection.hidden = true;
+    onboardingWizardEl.hidden = true;
     appShell.hidden = true;
   }
 });

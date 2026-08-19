@@ -243,6 +243,29 @@ button {
   line-height: 1.4;
 }
 
+.choice-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.choice-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.choice-btn.selected {
+  border-color: #4285f4;
+  background: #e8f0fe;
+  color: #1a4fc4;
+}
+
 .text-link {
   display: block;
   margin: 12px auto 0;
