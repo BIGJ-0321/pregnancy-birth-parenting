@@ -87,9 +87,25 @@ button {
   cursor: pointer;
 }
 
+input[type="text"],
+input[type="date"],
+input[type="number"] {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text-primary);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
 #login-btn {
   background: var(--accent);
-  color: white;
+  color: var(--bg);
 }
 
 #logout-btn {
@@ -101,12 +117,6 @@ button {
   margin-top: 12px;
   font-size: 0.9rem;
   color: var(--text-secondary);
-}
-
-#create-household-btn {
-  background: var(--accent);
-  color: white;
-  width: 100%;
 }
 
 .join-row {
@@ -121,7 +131,7 @@ button {
   padding: 12px;
   border-radius: 10px;
   border: 1px solid var(--border-strong);
-  background: white;
+  background: var(--surface-2);
   font-size: 1rem;
   text-transform: uppercase;
   font-family: inherit;
@@ -165,7 +175,7 @@ button {
   padding: 12px;
   border-radius: 10px;
   border: 1px solid var(--border-strong);
-  background: white;
+  background: var(--surface-2);
   font-family: inherit;
   font-size: 1rem;
   color: var(--text-primary);
@@ -203,6 +213,8 @@ button {
   padding: 8px 14px;
   border-radius: 999px;
   border: 1px solid var(--border-strong);
+  background: transparent;
+  font-family: inherit;
   font-size: 0.9rem;
   cursor: pointer;
   user-select: none;
@@ -217,13 +229,6 @@ button {
   background: var(--accent-bg);
   border-color: var(--accent);
   color: var(--accent);
-}
-
-#save-onboarding-btn {
-  margin-top: 24px;
-  background: var(--accent);
-  color: white;
-  width: 100%;
 }
 
 #week-result-title {
@@ -328,7 +333,7 @@ button {
   padding: 16px;
   border-radius: 12px;
   border: 1px solid var(--border-strong);
-  background: white;
+  background: var(--surface-2);
   font-family: inherit;
   font-size: 1rem;
   text-align: left;
@@ -524,7 +529,7 @@ button {
   padding: 12px;
   border-radius: 10px;
   border: 1px solid var(--border-strong);
-  background: white;
+  background: var(--surface-2);
   font-family: inherit;
   font-size: 1rem;
   margin-top: 4px;

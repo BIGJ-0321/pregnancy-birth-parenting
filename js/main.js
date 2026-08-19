@@ -756,7 +756,7 @@ function renderCanidoResult(name) {
       <span class="canido-badge ${item.level}">${item.label}</span>
       <div>
         <div style="font-weight:600;">${name}</div>
-        <div style="font-size:0.85rem; color:#555; margin-top:2px;">${item.reason}</div>
+        <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:2px;">${item.reason}</div>
       </div>
     </div>
   `;
