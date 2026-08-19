@@ -13,7 +13,7 @@ body {
 }
 
 body:has(#app-shell:not([hidden])) {
-  padding-bottom: 96px;
+  padding-bottom: 118px;
 }
 
 h1 {
@@ -272,21 +272,21 @@ button {
   border-top: 1px solid #e5e5e5;
   max-width: 480px;
   margin-inline: auto;
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
 }
 
 .tab-btn {
   flex: 1;
   background: transparent;
   border: none;
-  padding: 10px 4px;
+  padding: 14px 4px 6px;
   font-size: 0.7rem;
   color: #999;
   border-radius: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .tab-btn.active {
@@ -295,7 +295,7 @@ button {
 }
 
 .tab-icon {
-  font-size: 1.2rem;
+  font-size: 1.35rem;
 }
 
 .partner-feed {

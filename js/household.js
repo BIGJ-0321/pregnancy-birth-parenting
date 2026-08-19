@@ -92,6 +92,13 @@ export async function toggleChecklistItem(householdId, itemId, checked, byName) 
   });
 }
 
+export async function saveProfile(householdId, { age, dueDate }) {
+  await updateDoc(doc(db, "households", householdId), {
+    momAge: age,
+    dueDate,
+  });
+}
+
 export async function saveNextCheckup(householdId, dateStr) {
   await updateDoc(doc(db, "households", householdId), {
     nextCheckupDate: dateStr,

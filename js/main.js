@@ -14,6 +14,7 @@ import {
   addSymptomRecord,
   getLatestActivity,
   saveNextCheckup,
+  saveProfile,
 } from "./household.js";
 import { SITUATION_TAGS } from "./tags.js";
 import { calcPregnancyWeek, dueDateFromWeek, daysUntil } from "./pregnancy.js";
@@ -209,6 +210,7 @@ function renderHousehold(household) {
     appShell.hidden = false;
     renderHome(household);
     renderTodos(household);
+    renderSettings(household);
   } else {
     pageHeaderEl.hidden = false;
     authSectionEl.hidden = false;
@@ -225,6 +227,7 @@ const views = {
   symptoms: document.getElementById("view-symptoms"),
   canido: document.getElementById("view-canido"),
   todos: document.getElementById("view-todos"),
+  more: document.getElementById("view-more"),
 };
 
 function switchView(name) {
@@ -443,6 +446,64 @@ function renderTodos(household) {
     todoListEl.appendChild(li);
   }
 }
+
+// ---------- 전체 (내 정보 / 로그아웃) ----------
+
+const settingsAgeInput = document.getElementById("settings-age-input");
+const settingsDueDateInput = document.getElementById("settings-due-date-input");
+const settingsDueDateField = document.getElementById("settings-due-date-field");
+const settingsCurrentWeekInput = document.getElementById("settings-current-week-input");
+const settingsCurrentWeekField = document.getElementById("settings-current-week-field");
+const settingsDueModeRadios = document.querySelectorAll('input[name="settings-due-mode"]');
+const saveSettingsBtn = document.getElementById("save-settings-btn");
+const settingsSavedTextEl = document.getElementById("settings-saved-text");
+
+for (const radio of settingsDueModeRadios) {
+  radio.addEventListener("change", () => {
+    const mode = document.querySelector('input[name="settings-due-mode"]:checked').value;
+    settingsDueDateField.hidden = mode !== "due-date";
+    settingsCurrentWeekField.hidden = mode !== "current-week";
+  });
+}
+
+function renderSettings(household) {
+  settingsAgeInput.value = household.momAge || "";
+  settingsDueDateInput.value = household.dueDate || "";
+  settingsSavedTextEl.textContent = "";
+}
+
+saveSettingsBtn.addEventListener("click", async () => {
+  if (!lastHousehold) return;
+  const mode = document.querySelector('input[name="settings-due-mode"]:checked').value;
+  let dueDate;
+
+  if (mode === "due-date") {
+    if (!settingsDueDateInput.value) {
+      settingsSavedTextEl.textContent = "출산 예정일을 입력해줘.";
+      return;
+    }
+    dueDate = settingsDueDateInput.value;
+  } else {
+    const week = Number(settingsCurrentWeekInput.value);
+    if (!week || week < 1 || week > 42) {
+      settingsSavedTextEl.textContent = "현재 주차를 1~42 사이로 입력해줘.";
+      return;
+    }
+    dueDate = dueDateFromWeek(week);
+  }
+
+  const age = settingsAgeInput.value ? Number(settingsAgeInput.value) : null;
+
+  saveSettingsBtn.disabled = true;
+  try {
+    await saveProfile(lastHousehold.id, { age, dueDate });
+    settingsSavedTextEl.textContent = "저장됐어요.";
+  } catch (err) {
+    settingsSavedTextEl.textContent = "저장 실패: " + err.message;
+  } finally {
+    saveSettingsBtn.disabled = false;
+  }
+});
 
 // ---------- 증상가이드 ----------
 

@@ -116,8 +116,6 @@
         </div>
       </a>
 
-      <p class="disclaimer" id="disclaimer-text"></p>
-      <button id="app-logout-btn" class="text-link">로그아웃</button>
     </main>
 
     <main id="view-symptoms" class="view" hidden>
@@ -153,11 +151,44 @@
       <p id="todo-empty" class="muted" hidden>이번 주에 해당하는 항목이 없어요.</p>
     </main>
 
+    <main id="view-more" class="view" hidden>
+      <h2>전체</h2>
+
+      <div class="card">
+        <p class="field-label" style="margin-top:0;">내 정보</p>
+
+        <label class="field-label" for="settings-age-input">산모 나이</label>
+        <input id="settings-age-input" type="number" min="15" max="60" placeholder="예: 32" />
+
+        <div class="radio-row" style="margin-top:16px;">
+          <label><input type="radio" name="settings-due-mode" value="due-date" checked /> 출산 예정일을 알아요</label>
+          <label><input type="radio" name="settings-due-mode" value="current-week" /> 예정일은 모르고 현재 주차만 알아요</label>
+        </div>
+
+        <div id="settings-due-date-field">
+          <label class="field-label" for="settings-due-date-input">출산 예정일</label>
+          <input id="settings-due-date-input" type="date" />
+        </div>
+
+        <div id="settings-current-week-field" hidden>
+          <label class="field-label" for="settings-current-week-input">현재 임신 주차</label>
+          <input id="settings-current-week-input" type="number" min="1" max="42" placeholder="예: 8" />
+        </div>
+
+        <button id="save-settings-btn" style="margin-top:20px; width:100%; background:#4285f4; color:white;">저장하기</button>
+        <p id="settings-saved-text" class="muted" style="margin-top:8px;"></p>
+      </div>
+
+      <p class="disclaimer" id="disclaimer-text"></p>
+      <button id="app-logout-btn" class="text-link">로그아웃</button>
+    </main>
+
     <nav id="tab-bar">
       <button class="tab-btn" data-view="home"><span class="tab-icon">🏠</span>홈</button>
       <button class="tab-btn" data-view="symptoms"><span class="tab-icon">🩺</span>증상가이드</button>
       <button class="tab-btn" data-view="canido"><span class="tab-icon">❓</span>이거해도돼</button>
       <button class="tab-btn" data-view="todos"><span class="tab-icon">✅</span>할일·검진</button>
+      <button class="tab-btn" data-view="more"><span class="tab-icon">☰</span>전체</button>
     </nav>
   </div>
 
