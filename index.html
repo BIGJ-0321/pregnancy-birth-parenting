@@ -118,7 +118,7 @@
       </div>
 
       <div class="card icon-card" id="role-card-main">
-        <span class="icon-card-icon">💗</span>
+        <span class="icon-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.5-7-10a4.5 4.5 0 018-2.8A4.5 4.5 0 0119 10c0 5.5-7 10-7 10z"/></svg></span>
         <div>
           <p class="icon-card-title" id="role-card-main-title"></p>
           <p class="icon-card-body" id="role-card-main-text"></p>
@@ -126,7 +126,7 @@
       </div>
 
       <div class="card icon-card" id="role-card-caution">
-        <span class="icon-card-icon">⚠️</span>
+        <span class="icon-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><circle cx="12" cy="16" r="0.8" fill="currentColor" stroke="none"/><path d="M10.5 3.5L2 19h20L13.5 3.5a1.7 1.7 0 00-3 0z"/></svg></span>
         <div>
           <p class="icon-card-title" id="role-card-caution-title"></p>
           <p class="icon-card-body" id="role-card-caution-text"></p>
@@ -134,7 +134,7 @@
       </div>
 
       <a href="#" id="checkup-card" class="card icon-card">
-        <span class="icon-card-icon">📅</span>
+        <span class="icon-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>
         <div>
           <p class="icon-card-title">다음 검진</p>
           <p class="icon-card-body" id="checkup-card-text"></p>
@@ -142,7 +142,7 @@
       </a>
 
       <a href="#" id="todo-summary-link" class="card icon-card">
-        <span class="icon-card-icon">📋</span>
+        <span class="icon-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3l1.5 3M15 3l-1.5 3"/><path d="M6 8c0-1.5 1-2.5 2.5-2.5h7C17 5.5 18 6.5 18 8v10a3 3 0 01-3 3H9a3 3 0 01-3-3V8z"/><path d="M9.5 12l2 2 3-3.5"/></svg></span>
         <div>
           <p class="icon-card-title">할 일</p>
           <p class="icon-card-body" id="todo-summary-text"></p>
@@ -231,11 +231,21 @@
     </main>
 
     <nav id="tab-bar">
-      <button class="tab-btn" data-view="home"><span class="tab-icon">🏠</span>홈</button>
-      <button class="tab-btn" data-view="symptoms"><span class="tab-icon">🩺</span>증상가이드</button>
-      <button class="tab-btn" data-view="canido"><span class="tab-icon">❓</span>이거해도돼</button>
-      <button class="tab-btn" data-view="todos"><span class="tab-icon">✅</span>할일·검진</button>
-      <button class="tab-btn" data-view="more"><span class="tab-icon">👤</span>MY</button>
+      <button class="tab-btn" data-view="home">
+        <span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11L12 4l8 7"/><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9"/><path d="M10 20v-5h4v5"/></svg></span>홈
+      </button>
+      <button class="tab-btn" data-view="symptoms">
+        <span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg></span>증상가이드
+      </button>
+      <button class="tab-btn" data-view="canido">
+        <span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.5a2.7 2.7 0 115.2 1.2c-.7.9-1.7 1.2-1.7 2.6"/><circle cx="12.5" cy="16.8" r="0.9" fill="currentColor" stroke="none"/></svg></span>이거해도돼
+      </button>
+      <button class="tab-btn" data-view="todos">
+        <span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 9l2 2 4-4"/><path d="M8 16h6"/></svg></span>할일·검진
+      </button>
+      <button class="tab-btn" data-view="more">
+        <span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-4.2 0-7.5 3.8-7.5 8.5C4.5 17 8 20 12 21.5 16 20 19.5 17 19.5 11.5 19.5 6.8 16.2 3 12 3z"/><path d="M12 8.2c-1.6 0-2.8 1.6-2.8 3.7S10.4 15.5 12 15.5"/></svg></span>MY
+      </button>
     </nav>
   </div>
 

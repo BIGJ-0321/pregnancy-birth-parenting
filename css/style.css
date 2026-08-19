@@ -395,7 +395,7 @@ button {
 }
 
 .tab-icon {
-  font-size: 1.35rem;
+  display: flex;
 }
 
 .partner-feed {
@@ -450,9 +450,10 @@ button {
 }
 
 .icon-card-icon {
-  font-size: 1.3rem;
   flex-shrink: 0;
-  line-height: 1.4;
+  color: var(--accent);
+  display: flex;
+  padding-top: 1px;
 }
 
 .icon-card-title {
