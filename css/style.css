@@ -243,6 +243,15 @@ button {
   line-height: 1.4;
 }
 
+.text-link {
+  display: block;
+  margin: 12px auto 0;
+  background: transparent;
+  color: #999;
+  font-size: 0.8rem;
+  padding: 8px;
+}
+
 /* 탭바 앱 셸 */
 
 .view h2 {

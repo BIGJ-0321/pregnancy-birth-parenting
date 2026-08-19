@@ -22,9 +22,11 @@ import { CANIDO_ITEMS } from "./canidoContent.js";
 
 // ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 
+const authSectionEl = document.getElementById("auth-section");
 const loginBtn = document.getElementById("login-btn");
 const logoutBtn = document.getElementById("logout-btn");
 const statusEl = document.getElementById("auth-status");
+const appLogoutBtn = document.getElementById("app-logout-btn");
 
 const householdSetupSection = document.getElementById("household-setup-section");
 const householdConnectedSection = document.getElementById("household-connected-section");
@@ -59,6 +61,10 @@ loginBtn.addEventListener("click", () => {
 });
 
 logoutBtn.addEventListener("click", () => {
+  signOut(auth);
+});
+
+appLogoutBtn.addEventListener("click", () => {
   signOut(auth);
 });
 
@@ -186,11 +192,15 @@ function renderHousehold(household) {
   inviteCodeDisplayEl.textContent = household.inviteCode;
 
   if (household.dueDate) {
+    // 셋업 다 끝났으면 로그인/가구연결 카드는 접어두고 바로 앱 화면으로
+    authSectionEl.hidden = true;
+    householdConnectedSection.hidden = true;
     onboardingSection.hidden = true;
     appShell.hidden = false;
     renderHome(household);
     renderTodos(household);
   } else {
+    authSectionEl.hidden = false;
     onboardingSection.hidden = false;
     appShell.hidden = true;
   }
@@ -512,6 +522,7 @@ onAuthStateChanged(auth, async (user) => {
     statusEl.textContent = "로그인되지 않음";
     loginBtn.hidden = false;
     logoutBtn.hidden = true;
+    authSectionEl.hidden = false;
     householdSetupSection.hidden = true;
     householdConnectedSection.hidden = true;
     onboardingSection.hidden = true;
