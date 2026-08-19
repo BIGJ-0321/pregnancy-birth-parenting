@@ -11,10 +11,16 @@ import {
   saveHouseholdSetup,
   subscribeHousehold,
   toggleChecklistItem,
+  addSymptomRecord,
+  getLatestActivity,
 } from "./household.js";
 import { SITUATION_TAGS } from "./tags.js";
 import { calcPregnancyWeek, dueDateFromWeek } from "./pregnancy.js";
-import { getWeeklyInfo, getChecklistForWeek, MEDICAL_DISCLAIMER } from "./weeklyContent.js";
+import { getWeeklyInfo, getChecklistForWeek, getDadTip, MEDICAL_DISCLAIMER, CHECKLIST_ITEMS } from "./weeklyContent.js";
+import { SYMPTOMS } from "./symptomsContent.js";
+import { CANIDO_ITEMS } from "./canidoContent.js";
+
+// ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 
 const loginBtn = document.getElementById("login-btn");
 const logoutBtn = document.getElementById("logout-btn");
@@ -39,17 +45,7 @@ const tagsListEl = document.getElementById("tags-list");
 const saveOnboardingBtn = document.getElementById("save-onboarding-btn");
 const onboardingErrorEl = document.getElementById("onboarding-error");
 
-const weekResultSection = document.getElementById("week-result-section");
-const weekResultTitleEl = document.getElementById("week-result-title");
-const weekBabyInfoEl = document.getElementById("week-baby-info");
-const weekMomInfoEl = document.getElementById("week-mom-info");
-
-const checklistSection = document.getElementById("checklist-section");
-const checklistListEl = document.getElementById("checklist-list");
-const checklistEmptyEl = document.getElementById("checklist-empty");
-
-const disclaimerEl = document.getElementById("disclaimer-text");
-disclaimerEl.textContent = MEDICAL_DISCLAIMER;
+const appShell = document.getElementById("app-shell");
 
 let currentHouseholdId = null;
 let unsubscribeHousehold = null;
@@ -130,7 +126,6 @@ saveOnboardingBtn.addEventListener("click", async () => {
   saveOnboardingBtn.disabled = true;
   try {
     await saveHouseholdSetup(currentHouseholdId, { dueDate, tags: selectedTags });
-    // 저장 후 화면 갱신은 subscribeHousehold가 자동으로 처리함
   } catch (err) {
     showOnboardingError(err.message);
   } finally {
@@ -162,10 +157,20 @@ function showOnboardingError(message) {
   onboardingErrorEl.hidden = false;
 }
 
+function currentUserName() {
+  return auth.currentUser?.displayName || "배우자";
+}
+
 function watchHousehold(householdId) {
   if (unsubscribeHousehold) unsubscribeHousehold();
+  let firstRender = true;
   unsubscribeHousehold = subscribeHousehold(householdId, (household) => {
     renderHousehold(household);
+    if (firstRender) {
+      setupSymptomsView(household.id);
+      setupCanidoView();
+      firstRender = false;
+    }
   });
 }
 
@@ -182,61 +187,173 @@ function renderHousehold(household) {
 
   if (household.dueDate) {
     onboardingSection.hidden = true;
-    showWeekResult(household);
+    appShell.hidden = false;
+    renderHome(household);
+    renderTodos(household);
   } else {
     onboardingSection.hidden = false;
-    weekResultSection.hidden = true;
-    checklistSection.hidden = true;
-    disclaimerEl.hidden = true;
+    appShell.hidden = true;
   }
 }
 
-function showWeekResult(household) {
+// ---------- 탭 전환 ----------
+
+const tabButtons = document.querySelectorAll(".tab-btn");
+const views = {
+  home: document.getElementById("view-home"),
+  symptoms: document.getElementById("view-symptoms"),
+  canido: document.getElementById("view-canido"),
+  todos: document.getElementById("view-todos"),
+};
+
+function switchView(name) {
+  for (const [key, el] of Object.entries(views)) {
+    el.hidden = key !== name;
+  }
+  for (const btn of tabButtons) {
+    btn.classList.toggle("active", btn.dataset.view === name);
+  }
+  window.scrollTo(0, 0);
+}
+
+for (const btn of tabButtons) {
+  btn.addEventListener("click", () => switchView(btn.dataset.view));
+}
+
+document.getElementById("todo-summary-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  switchView("todos");
+});
+
+switchView("home");
+
+// ---------- 홈 화면 ----------
+
+const weekResultTitleEl = document.getElementById("week-result-title");
+const weekBabyInfoEl = document.getElementById("week-baby-info");
+const partnerFeedEl = document.getElementById("partner-feed");
+const roleMomBtn = document.getElementById("role-mom-btn");
+const roleDadBtn = document.getElementById("role-dad-btn");
+const roleCardTextEl = document.getElementById("role-card-text");
+const todoSummaryTextEl = document.getElementById("todo-summary-text");
+const disclaimerEl = document.getElementById("disclaimer-text");
+disclaimerEl.textContent = MEDICAL_DISCLAIMER;
+
+let currentRole = "mom";
+let lastHousehold = null;
+
+roleMomBtn.addEventListener("click", () => setRole("mom"));
+roleDadBtn.addEventListener("click", () => setRole("dad"));
+
+function setRole(role) {
+  currentRole = role;
+  roleMomBtn.classList.toggle("active", role === "mom");
+  roleDadBtn.classList.toggle("active", role === "dad");
+  if (lastHousehold) renderRoleCard(lastHousehold);
+}
+
+const roleToggleEl = document.querySelector(".role-toggle");
+const roleCardEl = document.getElementById("role-card");
+const todoSummaryLinkEl = document.getElementById("todo-summary-link");
+
+// role-toggle/todo-summary-link/partner-feed는 CSS에서 display:flex를 고정으로 주기 때문에,
+// hidden 속성 대신 style.display로 직접 토글해야 확실히 감춰짐
+function setVisible(el, visible, displayValue = "flex") {
+  el.style.display = visible ? displayValue : "none";
+}
+
+function renderHome(household) {
+  lastHousehold = household;
   const { week, dayOfWeek, isBorn } = calcPregnancyWeek(household.dueDate);
-  weekResultSection.hidden = false;
-  disclaimerEl.hidden = false;
 
   if (isBorn) {
     weekResultTitleEl.textContent = "출산 예정일이 지났어요";
-    weekBabyInfoEl.textContent = "";
-    weekMomInfoEl.textContent =
-      "혹시 출산했다면, 다음 업데이트에서 아기 개월수 모드로 전환하는 기능을 추가할게.";
-    checklistSection.hidden = true;
+    weekBabyInfoEl.textContent = "혹시 출산했다면, 다음 업데이트에서 아기 개월수 모드로 전환하는 기능을 추가할게.";
+    setVisible(partnerFeedEl, false);
+    setVisible(roleToggleEl, false);
+    roleCardEl.hidden = true;
+    setVisible(todoSummaryLinkEl, false);
     return;
   }
+
+  setVisible(roleToggleEl, true);
+  roleCardEl.hidden = false;
+  setVisible(todoSummaryLinkEl, true);
 
   const info = getWeeklyInfo(week);
   weekResultTitleEl.textContent = `임신 ${week}주 ${dayOfWeek}일차`;
   weekBabyInfoEl.textContent = info.baby;
-  weekMomInfoEl.textContent = info.mom;
 
-  renderChecklist(week, household);
+  const labels = {};
+  for (const item of CHECKLIST_ITEMS) labels[item.id] = item.label;
+  const activity = getLatestActivity(household, labels);
+  if (activity) {
+    partnerFeedEl.textContent = `👋 ${activity.byName}님이 최근 '${activity.text}' 했어요`;
+    setVisible(partnerFeedEl, true);
+  } else {
+    setVisible(partnerFeedEl, false);
+  }
+
+  renderRoleCard(household);
+
+  const items = getChecklistForWeek(week, household.tags || []);
+  const state = household.checklistState || {};
+  const remaining = items.filter((item) => !state[item.id]?.done).length;
+  todoSummaryTextEl.textContent =
+    remaining > 0 ? `이번 주 할 일 ${remaining}개 남음` : "이번 주 할 일을 모두 끝냈어요";
 }
 
-function renderChecklist(week, household) {
+function renderRoleCard(household) {
+  const { week, isBorn } = calcPregnancyWeek(household.dueDate);
+  if (isBorn) return;
+  if (currentRole === "mom") {
+    roleCardTextEl.textContent = getWeeklyInfo(week).mom;
+  } else {
+    roleCardTextEl.textContent = getDadTip(week);
+  }
+}
+
+// ---------- 할일 · 검진 ----------
+
+const todoListEl = document.getElementById("todo-list");
+const todoEmptyEl = document.getElementById("todo-empty");
+const ASSIGNEE_LABEL = { mom: "엄", dad: "아", both: "둘" };
+
+function renderTodos(household) {
+  const { week, isBorn } = calcPregnancyWeek(household.dueDate);
+  if (isBorn) {
+    todoListEl.innerHTML = "";
+    todoEmptyEl.hidden = false;
+    todoEmptyEl.textContent = "출산 이후 체크리스트는 다음 업데이트에서 추가할게.";
+    return;
+  }
+
   const items = getChecklistForWeek(week, household.tags || []);
   const state = household.checklistState || {};
 
-  checklistSection.hidden = false;
-  checklistListEl.innerHTML = "";
-  checklistEmptyEl.hidden = items.length > 0;
+  todoListEl.innerHTML = "";
+  todoEmptyEl.hidden = items.length > 0;
+  todoEmptyEl.textContent = "이번 주에 해당하는 항목이 없어요.";
 
   for (const item of items) {
-    const checked = !!state[item.id];
+    const entry = state[item.id];
+    const checked = !!entry?.done;
     const li = document.createElement("li");
     li.className = checked ? "checked" : "";
 
-    const checkboxId = `check-${item.id}`;
+    const checkboxId = `todo-${item.id}`;
+    const assignee = item.assignee || "both";
     li.innerHTML = `
       <input type="checkbox" id="${checkboxId}" ${checked ? "checked" : ""} />
       <label for="${checkboxId}">${item.label}${item.required ? '<span class="required-badge">필수</span>' : ""}</label>
+      <span class="assignee-badge ${assignee}">${ASSIGNEE_LABEL[assignee]}</span>
     `;
 
     const checkbox = li.querySelector("input");
     checkbox.addEventListener("change", async () => {
       li.classList.toggle("checked", checkbox.checked);
       try {
-        await toggleChecklistItem(household.id, item.id, checkbox.checked);
+        await toggleChecklistItem(household.id, item.id, checkbox.checked, currentUserName());
       } catch (err) {
         checkbox.checked = !checkbox.checked;
         li.classList.toggle("checked", checkbox.checked);
@@ -244,9 +361,129 @@ function renderChecklist(week, household) {
       }
     });
 
-    checklistListEl.appendChild(li);
+    todoListEl.appendChild(li);
   }
 }
+
+// ---------- 증상가이드 ----------
+
+const symptomChipsEl = document.getElementById("symptom-chips");
+const symptomDetailEl = document.getElementById("symptom-detail");
+let symptomsViewReady = false;
+
+function setupSymptomsView(householdId) {
+  if (symptomsViewReady) return;
+  symptomsViewReady = true;
+
+  let activeChip = null;
+
+  for (const name of Object.keys(SYMPTOMS)) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "tag-chip";
+    chip.textContent = name;
+    chip.addEventListener("click", () => {
+      if (activeChip) activeChip.classList.remove("checked");
+      chip.classList.add("checked");
+      activeChip = chip;
+      renderSymptomDetail(name, householdId);
+    });
+    symptomChipsEl.appendChild(chip);
+  }
+
+  const firstChip = symptomChipsEl.querySelector(".tag-chip");
+  if (firstChip) firstChip.click();
+}
+
+function renderSymptomDetail(name, householdId) {
+  const s = SYMPTOMS[name];
+  symptomDetailEl.innerHTML = `
+    <div class="symptom-tier">
+      <div><div class="tier-title">흔히 있을 수 있어요</div>${s.common}</div>
+    </div>
+    <div class="symptom-tier">
+      <div><div class="tier-title">이렇게 해보세요</div>${s.care}</div>
+    </div>
+    <div class="symptom-tier tier-warning">
+      <div><div class="tier-title">병원에 문의하세요</div>${s.call}</div>
+    </div>
+    <div class="symptom-tier tier-danger">
+      <div><div class="tier-title">바로 진료가 필요해요</div>${s.urgent}</div>
+    </div>
+    <div class="record-row" id="record-row">
+      <input type="checkbox" id="record-cb" />
+      <label for="record-cb">지금 증상 기록하기</label>
+    </div>
+  `;
+
+  document.getElementById("record-cb").addEventListener("change", async (e) => {
+    const row = document.getElementById("record-row");
+    if (!e.target.checked) return;
+    try {
+      await addSymptomRecord(householdId, name, currentUserName());
+      row.classList.add("done");
+      row.querySelector("label").textContent = "기록됨 · 배우자에게 공유됨";
+    } catch (err) {
+      e.target.checked = false;
+      alert("저장 실패: " + err.message);
+    }
+  });
+}
+
+// ---------- 이거 해도 돼 ----------
+
+const canidoSearchEl = document.getElementById("canido-search");
+const canidoResultEl = document.getElementById("canido-result");
+const canidoChipsEl = document.getElementById("canido-chips");
+let canidoViewReady = false;
+
+function setupCanidoView() {
+  if (canidoViewReady) return;
+  canidoViewReady = true;
+
+  for (const name of Object.keys(CANIDO_ITEMS)) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "tag-chip";
+    chip.textContent = name;
+    chip.addEventListener("click", () => {
+      canidoSearchEl.value = name;
+      renderCanidoResult(name);
+    });
+    canidoChipsEl.appendChild(chip);
+  }
+
+  canidoSearchEl.addEventListener("input", () => {
+    const q = canidoSearchEl.value.trim();
+    if (CANIDO_ITEMS[q]) {
+      renderCanidoResult(q);
+    } else {
+      canidoResultEl.innerHTML = "";
+    }
+  });
+
+  renderCanidoResult(Object.keys(CANIDO_ITEMS)[0]);
+  canidoSearchEl.value = Object.keys(CANIDO_ITEMS)[0];
+}
+
+function renderCanidoResult(name) {
+  const item = CANIDO_ITEMS[name];
+  if (!item) {
+    canidoResultEl.innerHTML = `<p class="muted">아직 준비 중인 항목이에요.</p>`;
+    return;
+  }
+  canidoResultEl.innerHTML = `
+    <div class="canido-result-card">
+      <span class="canido-badge ${item.level}">${item.label}</span>
+      <div>
+        <div style="font-weight:600;">${name}</div>
+        <div style="font-size:0.85rem; color:#555; margin-top:2px;">${item.reason}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- 인증 상태 ----------
 
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -278,8 +515,6 @@ onAuthStateChanged(auth, async (user) => {
     householdSetupSection.hidden = true;
     householdConnectedSection.hidden = true;
     onboardingSection.hidden = true;
-    weekResultSection.hidden = true;
-    checklistSection.hidden = true;
-    disclaimerEl.hidden = true;
+    appShell.hidden = true;
   }
 });

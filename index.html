@@ -60,19 +60,62 @@
     <p id="onboarding-error" class="error" hidden></p>
   </div>
 
-  <div class="card" id="week-result-section" hidden>
-    <h2 id="week-result-title"></h2>
-    <p class="baby-info" id="week-baby-info"></p>
-    <p class="mom-info" id="week-mom-info"></p>
-  </div>
+  <div id="app-shell" hidden>
 
-  <div class="card" id="checklist-section" hidden>
-    <h2>이번 주 체크리스트</h2>
-    <ul id="checklist-list" class="checklist-list"></ul>
-    <p id="checklist-empty" class="muted" hidden>이번 주에 해당하는 항목이 없어요.</p>
-  </div>
+    <main id="view-home" class="view">
+      <div class="card" id="week-result-section">
+        <h2 id="week-result-title"></h2>
+        <p class="baby-info" id="week-baby-info"></p>
+      </div>
 
-  <p class="disclaimer" id="disclaimer-text" hidden></p>
+      <div id="partner-feed" class="partner-feed" hidden></div>
+
+      <div class="role-toggle">
+        <button id="role-mom-btn" class="role-btn active">엄마</button>
+        <button id="role-dad-btn" class="role-btn">아빠</button>
+      </div>
+
+      <div class="card" id="role-card">
+        <p id="role-card-text"></p>
+      </div>
+
+      <a href="#" id="todo-summary-link" class="card todo-summary-link">
+        <span id="todo-summary-text"></span>
+        <span class="arrow">→</span>
+      </a>
+
+      <p class="disclaimer" id="disclaimer-text"></p>
+    </main>
+
+    <main id="view-symptoms" class="view" hidden>
+      <h2>증상가이드</h2>
+      <p class="subtitle">지금 느끼는 증상을 선택해줘</p>
+      <div id="symptom-chips" class="tags-list"></div>
+      <div id="symptom-detail"></div>
+    </main>
+
+    <main id="view-canido" class="view" hidden>
+      <h2>이거 해도 돼?</h2>
+      <p class="subtitle">궁금한 걸 검색해봐</p>
+      <input id="canido-search" type="text" placeholder="예: 커피, 타이레놀, 비행기" />
+      <div id="canido-result"></div>
+      <p class="field-label">자주 찾는 검색어</p>
+      <div id="canido-chips" class="tags-list"></div>
+    </main>
+
+    <main id="view-todos" class="view" hidden>
+      <h2>할 일 · 검진</h2>
+      <ul id="todo-list" class="checklist-list"></ul>
+      <p id="todo-empty" class="muted" hidden>이번 주에 해당하는 항목이 없어요.</p>
+    </main>
+
+    <nav id="tab-bar">
+      <button class="tab-btn" data-view="home"><span class="tab-icon">🏠</span>홈</button>
+      <button class="tab-btn" data-view="symptoms"><span class="tab-icon">🩺</span>증상가이드</button>
+      <button class="tab-btn" data-view="canido"><span class="tab-icon">❓</span>이거해도돼</button>
+      <button class="tab-btn" data-view="todos"><span class="tab-icon">✅</span>할일·검진</button>
+    </nav>
+  </div>
 
   <script type="module" src="js/main.js"></script>
 </body>

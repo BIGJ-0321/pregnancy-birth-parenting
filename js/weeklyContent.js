@@ -47,33 +47,46 @@ export const WEEKLY_INFO = [
   { baby: "출산 예정일이에요.", mom: "예정일이 지나도 1~2주 정도는 정상 범위이니 병원 안내에 따르면 돼요." },
 ];
 
+// 담당(assignee): 둘 다 정할 수 있지만, 지금은 일반적인 기준으로 기본값만 붙여둠 (나중에 직접 바꾸는 기능 추가 예정)
 // 체크리스트 항목: weekStart~weekEnd 사이일 때 노출됨. tags가 있으면 해당 태그를 선택한 가구에만 노출.
 export const CHECKLIST_ITEMS = [
-  { id: "first-prenatal-visit", label: "첫 산전 진찰 예약하기", weekStart: 5, weekEnd: 10, required: true },
-  { id: "happy-card", label: "국민행복카드(임신·출산 진료비 지원) 신청하기", weekStart: 5, weekEnd: 12, required: true },
-  { id: "nt-scan", label: "1차 기형아 검사(NT 초음파) 받기", weekStart: 11, weekEnd: 13, required: true },
-  { id: "nipt-or-quad", label: "니프티(NIPT) 또는 쿼드 검사 상담하기", weekStart: 10, weekEnd: 20, required: false },
-  { id: "anatomy-scan", label: "정밀 초음파(기형아 정밀검사) 받기", weekStart: 20, weekEnd: 24, required: true },
-  { id: "postpartum-care-center", label: "산후조리원 알아보고 예약하기", weekStart: 16, weekEnd: 28, required: false },
-  { id: "glucose-test", label: "임신성당뇨 검사(경구당부하검사) 받기", weekStart: 24, weekEnd: 28, required: true },
-  { id: "maternity-leave", label: "출산휴가 신청 준비하기 (회사에 통보)", weekStart: 28, weekEnd: 34, required: true },
-  { id: "parental-leave", label: "육아휴직 신청 알아보기", weekStart: 28, weekEnd: 36, required: false },
-  { id: "gbs-test", label: "B형 연쇄상구균(GBS) 검사 받기", weekStart: 35, weekEnd: 37, required: true },
-  { id: "hospital-bag", label: "출산 가방(입원 준비물) 챙기기", weekStart: 34, weekEnd: 38, required: true },
-  { id: "car-seat", label: "카시트 구매 및 설치하기", weekStart: 32, weekEnd: 38, required: true },
-  { id: "birth-plan", label: "분만 병원/조리원 최종 확정하기", weekStart: 30, weekEnd: 36, required: true },
-  { id: "baby-name", label: "아기 이름 후보 정하기", weekStart: 20, weekEnd: 38, required: false },
-  { id: "birth-registration-info", label: "출생신고 서류 미리 확인하기", weekStart: 36, weekEnd: 40, required: false },
-  { id: "first-meeting-voucher", label: "첫만남이용권/아동수당 신청 방법 알아두기", weekStart: 36, weekEnd: 40, required: false },
+  { id: "first-prenatal-visit", label: "첫 산전 진찰 예약하기", weekStart: 5, weekEnd: 10, required: true, assignee: "both" },
+  { id: "happy-card", label: "국민행복카드(임신·출산 진료비 지원) 신청하기", weekStart: 5, weekEnd: 12, required: true, assignee: "dad" },
+  { id: "nt-scan", label: "1차 기형아 검사(NT 초음파) 받기", weekStart: 11, weekEnd: 13, required: true, assignee: "mom" },
+  { id: "nipt-or-quad", label: "니프티(NIPT) 또는 쿼드 검사 상담하기", weekStart: 10, weekEnd: 20, required: false, assignee: "mom" },
+  { id: "anatomy-scan", label: "정밀 초음파(기형아 정밀검사) 받기", weekStart: 20, weekEnd: 24, required: true, assignee: "mom" },
+  { id: "postpartum-care-center", label: "산후조리원 알아보고 예약하기", weekStart: 16, weekEnd: 28, required: false, assignee: "both" },
+  { id: "glucose-test", label: "임신성당뇨 검사(경구당부하검사) 받기", weekStart: 24, weekEnd: 28, required: true, assignee: "mom" },
+  { id: "maternity-leave", label: "출산휴가 신청 준비하기 (회사에 통보)", weekStart: 28, weekEnd: 34, required: true, assignee: "mom" },
+  { id: "parental-leave", label: "육아휴직 신청 알아보기", weekStart: 28, weekEnd: 36, required: false, assignee: "dad" },
+  { id: "gbs-test", label: "B형 연쇄상구균(GBS) 검사 받기", weekStart: 35, weekEnd: 37, required: true, assignee: "mom" },
+  { id: "hospital-bag", label: "출산 가방(입원 준비물) 챙기기", weekStart: 34, weekEnd: 38, required: true, assignee: "both" },
+  { id: "car-seat", label: "카시트 구매 및 설치하기", weekStart: 32, weekEnd: 38, required: true, assignee: "dad" },
+  { id: "birth-plan", label: "분만 병원/조리원 최종 확정하기", weekStart: 30, weekEnd: 36, required: true, assignee: "both" },
+  { id: "baby-name", label: "아기 이름 후보 정하기", weekStart: 20, weekEnd: 38, required: false, assignee: "both" },
+  { id: "birth-registration-info", label: "출생신고 서류 미리 확인하기", weekStart: 36, weekEnd: 40, required: false, assignee: "dad" },
+  { id: "first-meeting-voucher", label: "첫만남이용권/아동수당 신청 방법 알아두기", weekStart: 36, weekEnd: 40, required: false, assignee: "dad" },
 
   // 상황 태그별 추가 항목
-  { id: "twins-extra-checkup", label: "쌍둥이 임신 - 정기검진 주기 단축 상담하기", weekStart: 20, weekEnd: 32, required: true, tags: ["twins"] },
-  { id: "high-risk-followup", label: "고위험 임신 - 정밀 모니터링 일정 상담하기", weekStart: 1, weekEnd: 40, required: true, tags: ["high-risk"] },
-  { id: "gd-diet", label: "임신성당뇨 - 식단/혈당 관리 교육받기", weekStart: 24, weekEnd: 36, required: true, tags: ["gestational-diabetes"] },
-  { id: "advanced-age-screening", label: "노산 - 정밀 유전 검사 상담하기", weekStart: 10, weekEnd: 20, required: true, tags: ["advanced-age"] },
-  { id: "c-section-prep", label: "제왕절개 - 수술 일정 및 마취 상담하기", weekStart: 32, weekEnd: 38, required: true, tags: ["c-section"] },
-  { id: "morning-sickness-care", label: "입덧 심함 - 수액/약물 치료 상담하기", weekStart: 6, weekEnd: 16, required: false, tags: ["severe-morning-sickness"] },
+  { id: "twins-extra-checkup", label: "쌍둥이 임신 - 정기검진 주기 단축 상담하기", weekStart: 20, weekEnd: 32, required: true, tags: ["twins"], assignee: "mom" },
+  { id: "high-risk-followup", label: "고위험 임신 - 정밀 모니터링 일정 상담하기", weekStart: 1, weekEnd: 40, required: true, tags: ["high-risk"], assignee: "mom" },
+  { id: "gd-diet", label: "임신성당뇨 - 식단/혈당 관리 교육받기", weekStart: 24, weekEnd: 36, required: true, tags: ["gestational-diabetes"], assignee: "mom" },
+  { id: "advanced-age-screening", label: "노산 - 정밀 유전 검사 상담하기", weekStart: 10, weekEnd: 20, required: true, tags: ["advanced-age"], assignee: "mom" },
+  { id: "c-section-prep", label: "제왕절개 - 수술 일정 및 마취 상담하기", weekStart: 32, weekEnd: 38, required: true, tags: ["c-section"], assignee: "mom" },
+  { id: "morning-sickness-care", label: "입덧 심함 - 수액/약물 치료 상담하기", weekStart: 6, weekEnd: 16, required: false, tags: ["severe-morning-sickness"], assignee: "dad" },
 ];
+
+// 트라이메스터별 아빠 조언 (0=1분기, 1=2분기, 2=3분기)
+export const DAD_TIPS = [
+  "입덧이나 피로감으로 힘들어할 수 있는 시기예요. 집안일을 더 맡아주고, 냄새에 예민해질 수 있으니 배려해주세요.",
+  "컨디션이 좋아지는 시기지만 체력 소모는 계속 커져요. 무거운 건 대신 들어주고, 정기검진에 같이 가주세요.",
+  "몸이 무거워지고 잠들기 힘들어하는 시기예요. 출산 준비물을 같이 챙기고, 언제든 병원에 갈 수 있게 동선을 미리 확인해두세요.",
+];
+
+export function getDadTip(week) {
+  const trimester = week <= 13 ? 0 : week <= 27 ? 1 : 2;
+  return DAD_TIPS[trimester];
+}
 
 export function getWeeklyInfo(week) {
   const idx = Math.min(Math.max(week, 1), WEEKLY_INFO.length) - 1;

@@ -9,7 +9,11 @@ body {
   color: #222;
   max-width: 480px;
   margin-inline: auto;
-  padding: 24px 16px;
+  padding: 24px 16px 24px;
+}
+
+body:has(#app-shell:not([hidden])) {
+  padding-bottom: 96px;
 }
 
 h1 {
@@ -173,18 +177,13 @@ button {
   color: #1a4fc4;
 }
 
-.baby-info,
-.mom-info {
-  margin: 10px 0;
+.baby-info {
+  margin: 10px 0 0;
   line-height: 1.5;
 }
 
 .baby-info::before {
   content: "👶 ";
-}
-
-.mom-info::before {
-  content: "🤰 ";
 }
 
 .checklist-list {
@@ -242,4 +241,222 @@ button {
   text-align: center;
   margin-top: 24px;
   line-height: 1.4;
+}
+
+/* 탭바 앱 셸 */
+
+.view h2 {
+  margin-bottom: 2px;
+}
+
+.view .subtitle {
+  margin-bottom: 16px;
+}
+
+#tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: white;
+  border-top: 1px solid #e5e5e5;
+  max-width: 480px;
+  margin-inline: auto;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 4px;
+  font-size: 0.7rem;
+  color: #999;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.tab-btn.active {
+  color: #1a4fc4;
+  font-weight: 600;
+}
+
+.tab-icon {
+  font-size: 1.2rem;
+}
+
+.partner-feed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #e8f0fe;
+  color: #1a4fc4;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 14px;
+  font-size: 0.85rem;
+}
+
+.role-toggle {
+  display: flex;
+  gap: 4px;
+  background: #eee;
+  border-radius: 999px;
+  padding: 3px;
+  margin-top: 16px;
+}
+
+.role-btn {
+  flex: 1;
+  background: transparent;
+  color: #555;
+  border-radius: 999px;
+  padding: 8px;
+  font-size: 0.9rem;
+}
+
+.role-btn.active {
+  background: #222;
+  color: white;
+}
+
+#role-card p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.todo-summary-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+  color: #222;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.todo-summary-link .arrow {
+  color: #999;
+}
+
+/* 증상가이드 */
+
+#symptom-detail {
+  margin-top: 16px;
+}
+
+.symptom-tier {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f8f9fa;
+  margin-top: 10px;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.symptom-tier .tier-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.symptom-tier.tier-warning {
+  background: #fef7e0;
+  color: #7a5b00;
+}
+
+.symptom-tier.tier-danger {
+  background: #fce8e6;
+  color: #a10e0e;
+}
+
+.record-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 0.9rem;
+  color: #1a4fc4;
+}
+
+.record-row.done {
+  color: #188038;
+}
+
+/* 이거 해도 돼 */
+
+#canido-search {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  margin-top: 4px;
+}
+
+.canido-result-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 14px;
+}
+
+.canido-badge {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.canido-badge.ok {
+  background: #e6f4ea;
+  color: #188038;
+}
+
+.canido-badge.caution {
+  background: #fef7e0;
+  color: #7a5b00;
+}
+
+.canido-badge.avoid {
+  background: #fce8e6;
+  color: #a10e0e;
+}
+
+/* 할일 · 검진 */
+
+.assignee-badge {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.assignee-badge.mom {
+  background: #fce8e6;
+  color: #a10e0e;
+}
+
+.assignee-badge.dad {
+  background: #e8f0fe;
+  color: #1a4fc4;
+}
+
+.assignee-badge.both {
+  background: #e6f4ea;
+  color: #188038;
 }

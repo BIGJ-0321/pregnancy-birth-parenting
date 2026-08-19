@@ -85,8 +85,44 @@ export function subscribeHousehold(householdId, callback) {
   });
 }
 
-export async function toggleChecklistItem(householdId, itemId, checked) {
+// checklistState[itemId] = { done, byName, at } - 누가 언제 체크했는지도 같이 저장해서 배우자 피드에 씀
+export async function toggleChecklistItem(householdId, itemId, checked, byName) {
   await updateDoc(doc(db, "households", householdId), {
-    [`checklistState.${itemId}`]: checked,
+    [`checklistState.${itemId}`]: { done: checked, byName, at: Date.now() },
   });
+}
+
+export async function addSymptomRecord(householdId, symptom, byName) {
+  await updateDoc(doc(db, "households", householdId), {
+    symptomLog: arrayUnion({ symptom, byName, at: Date.now() }),
+  });
+}
+
+// 홈 화면 상단 "배우자 활동" 피드에 쓸 가장 최근 활동 하나를 찾음
+export function getLatestActivity(household, checklistItemLabels) {
+  const events = [];
+
+  const checklistState = household.checklistState || {};
+  for (const [itemId, entry] of Object.entries(checklistState)) {
+    if (entry && entry.done && entry.byName) {
+      events.push({
+        text: `${checklistItemLabels[itemId] || itemId} 완료`,
+        byName: entry.byName,
+        at: entry.at || 0,
+      });
+    }
+  }
+
+  const symptomLog = household.symptomLog || [];
+  for (const entry of symptomLog) {
+    events.push({
+      text: `'${entry.symptom}' 증상 기록`,
+      byName: entry.byName,
+      at: entry.at || 0,
+    });
+  }
+
+  if (events.length === 0) return null;
+  events.sort((a, b) => b.at - a.at);
+  return events[0];
 }
