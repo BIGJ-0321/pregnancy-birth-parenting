@@ -87,6 +87,10 @@ function renderHousehold(household) {
     authSectionEl.hidden = true;
     onboardingWizardEl.hidden = true;
     appShell.hidden = false;
+    if (!roleInitialized) {
+      roleInitialized = true;
+      setRole(myRole);
+    }
     renderHome(household);
     renderTodos(household);
     renderSettings(household);
@@ -369,6 +373,7 @@ const disclaimerEl = document.getElementById("disclaimer-text");
 disclaimerEl.textContent = MEDICAL_DISCLAIMER;
 
 let currentRole = "mom";
+let roleInitialized = false;
 let lastHousehold = null;
 
 roleMomBtn.addEventListener("click", () => setRole("mom"));
@@ -378,6 +383,7 @@ function setRole(role) {
   currentRole = role;
   roleMomBtn.classList.toggle("active", role === "mom");
   roleDadBtn.classList.toggle("active", role === "dad");
+  document.body.dataset.role = role;
   if (lastHousehold) renderRoleCard(lastHousehold);
 }
 

@@ -18,6 +18,27 @@
   --mom-bg: #f5dcd3;
   --dad: #8b5e17;
   --dad-bg: #f5e6c8;
+
+  transition: background 0.25s ease;
+}
+
+/* 아빠 모드 - 고릴라 테마: 밝은 고라니 테마와 확실히 대비되는 다크 차콜 + 코퍼 포인트 */
+body[data-role="dad"] {
+  --bg: #2a241e;
+  --card-bg: #342d24;
+  --surface-2: #3f362a;
+  --text-primary: #f0e6d5;
+  --text-secondary: #b8ac93;
+  --text-muted: #8c8069;
+  --border: #4a4032;
+  --border-strong: #5c503e;
+  --accent: #d2884f;
+  --accent-bg: #4a3625;
+  --accent-dark: #d2884f;
+  --danger: #e08070;
+  --danger-bg: #4a2a22;
+  --warning: #e0b15c;
+  --warning-bg: #4a3a1e;
 }
 
 * {
