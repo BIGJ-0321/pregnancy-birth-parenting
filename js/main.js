@@ -56,6 +56,7 @@ const saveOnboardingBtn = document.getElementById("save-onboarding-btn");
 const onboardingErrorEl = document.getElementById("onboarding-error");
 
 const appShell = document.getElementById("app-shell");
+const pageHeaderEl = document.getElementById("page-header");
 
 let currentHouseholdId = null;
 let unsubscribeHousehold = null;
@@ -201,6 +202,7 @@ function renderHousehold(household) {
 
   if (household.dueDate) {
     // 셋업 다 끝났으면 로그인/가구연결 카드는 접어두고 바로 앱 화면으로
+    pageHeaderEl.hidden = true;
     authSectionEl.hidden = true;
     householdConnectedSection.hidden = true;
     onboardingSection.hidden = true;
@@ -208,6 +210,7 @@ function renderHousehold(household) {
     renderHome(household);
     renderTodos(household);
   } else {
+    pageHeaderEl.hidden = false;
     authSectionEl.hidden = false;
     onboardingSection.hidden = false;
     appShell.hidden = true;
@@ -588,6 +591,7 @@ onAuthStateChanged(auth, async (user) => {
     statusEl.textContent = "로그인되지 않음";
     loginBtn.hidden = false;
     logoutBtn.hidden = true;
+    pageHeaderEl.hidden = false;
     authSectionEl.hidden = false;
     householdSetupSection.hidden = true;
     householdConnectedSection.hidden = true;
