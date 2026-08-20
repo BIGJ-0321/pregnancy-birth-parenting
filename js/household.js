@@ -1,4 +1,4 @@
-import { db } from "./firebase.js?v=3";
+import { db } from "./firebase.js?v=4";
 import {
   doc,
   getDoc,
@@ -49,13 +49,9 @@ export async function joinHousehold(uid, rawCode) {
 
   const { householdId } = codeSnap.data();
   const householdRef = doc(db, "households", householdId);
-  const householdSnap = await getDoc(householdRef);
 
-  if (householdSnap.exists() && householdSnap.data().members.includes(uid)) {
-    await setDoc(doc(db, "users", uid), { householdId }, { merge: true });
-    return householdId;
-  }
-
+  // arrayUnion은 이미 멤버여도 중복 추가되지 않으므로, 참여 전 상태를 굳이 먼저 읽을 필요가 없음
+  // (참여 전 사람은 애초에 이 문서를 읽을 권한이 없어서, 읽으려 하면 규칙 위반으로 막혀버림)
   await updateDoc(householdRef, {
     members: arrayUnion(uid),
   });
