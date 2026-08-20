@@ -48,6 +48,12 @@ service cloud.firestore {
         allow read, write: if request.auth != null &&
           request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
       }
+
+      // 자유 추가형 할 일 - 가구 멤버만 읽고 쓸 수 있음 (완료 체크, 삭제 포함)
+      match /todos/{todoId} {
+        allow read, write: if request.auth != null &&
+          request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
+      }
     }
   }
 }

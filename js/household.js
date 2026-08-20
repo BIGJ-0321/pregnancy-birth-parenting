@@ -1,4 +1,4 @@
-import { db } from "./firebase.js?v=8";
+import { db } from "./firebase.js?v=9";
 import {
   doc,
   getDoc,
@@ -8,6 +8,7 @@ import {
   onSnapshot,
   collection,
   addDoc,
+  deleteDoc,
   query,
   orderBy,
   limit,
@@ -168,4 +169,30 @@ export function getLatestChecklistActivity(household, checklistItemLabels) {
   }
 
   return latest;
+}
+
+// 자유 추가형 할 일 (⑤) - assignee: "mom" | "dad" | "both"
+export async function addCustomTodo(householdId, { label, assignee, byName }) {
+  await addDoc(collection(db, "households", householdId, "todos"), {
+    label,
+    assignee,
+    done: false,
+    byName,
+    at: Date.now(),
+  });
+}
+
+export function subscribeCustomTodos(householdId, callback) {
+  const q = query(collection(db, "households", householdId, "todos"), orderBy("at", "asc"));
+  return onSnapshot(q, (snap) => {
+    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+  });
+}
+
+export async function toggleCustomTodo(householdId, todoId, done) {
+  await updateDoc(doc(db, "households", householdId, "todos", todoId), { done });
+}
+
+export async function deleteCustomTodo(householdId, todoId) {
+  await deleteDoc(doc(db, "households", householdId, "todos", todoId));
 }

@@ -1,4 +1,4 @@
-import { auth, googleProvider } from "./firebase.js?v=8";
+import { auth, googleProvider } from "./firebase.js?v=9";
 import {
   signInWithPopup,
   signOut,
@@ -16,12 +16,16 @@ import {
   getLatestChecklistActivity,
   saveTodayMood,
   subscribeTodayCheckin,
+  addCustomTodo,
+  subscribeCustomTodos,
+  toggleCustomTodo,
+  deleteCustomTodo,
   saveNextCheckup,
   saveProfile,
   setMemberRole,
-} from "./household.js?v=8";
-import { SITUATION_TAGS } from "./tags.js?v=8";
-import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=8";
+} from "./household.js?v=9";
+import { SITUATION_TAGS } from "./tags.js?v=9";
+import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=9";
 import {
   getWeeklyInfo,
   getChecklistForWeek,
@@ -29,9 +33,9 @@ import {
   getMomCaution,
   MEDICAL_DISCLAIMER,
   CHECKLIST_ITEMS,
-} from "./weeklyContent.js?v=8";
-import { SYMPTOMS } from "./symptomsContent.js?v=8";
-import { CANIDO_ITEMS } from "./canidoContent.js?v=8";
+} from "./weeklyContent.js?v=9";
+import { SYMPTOMS } from "./symptomsContent.js?v=9";
+import { CANIDO_ITEMS } from "./canidoContent.js?v=9";
 
 // ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 
@@ -71,11 +75,14 @@ let recentEvents = [];
 let unsubscribeEvents = null;
 let todayCheckin = null;
 let unsubscribeCheckin = null;
+let customTodos = [];
+let unsubscribeCustomTodos = null;
 
 function watchHousehold(householdId) {
   if (unsubscribeHousehold) unsubscribeHousehold();
   if (unsubscribeEvents) unsubscribeEvents();
   if (unsubscribeCheckin) unsubscribeCheckin();
+  if (unsubscribeCustomTodos) unsubscribeCustomTodos();
 
   let firstRender = true;
   unsubscribeHousehold = subscribeHousehold(householdId, (household) => {
@@ -98,6 +105,11 @@ function watchHousehold(householdId) {
   unsubscribeCheckin = subscribeTodayCheckin(householdId, getTodayDateStr(), (checkin) => {
     todayCheckin = checkin;
     if (lastHousehold) renderHome(lastHousehold);
+  });
+
+  unsubscribeCustomTodos = subscribeCustomTodos(householdId, (todos) => {
+    customTodos = todos;
+    renderCustomTodos();
   });
 }
 
@@ -707,6 +719,88 @@ function renderTodos(household) {
   }
 }
 
+const customTodoListEl = document.getElementById("custom-todo-list");
+const customTodoEmptyEl = document.getElementById("custom-todo-empty");
+const customTodoInput = document.getElementById("custom-todo-input");
+const customTodoAddBtn = document.getElementById("custom-todo-add-btn");
+const customTodoAssigneeRow = document.getElementById("custom-todo-assignee-row");
+let selectedAssignee = "both";
+
+customTodoAssigneeRow.querySelectorAll(".assignee-choice").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    selectedAssignee = btn.dataset.assignee;
+    customTodoAssigneeRow.querySelectorAll(".assignee-choice").forEach((b) => {
+      b.classList.toggle("selected", b === btn);
+    });
+  });
+});
+
+customTodoAddBtn.addEventListener("click", async () => {
+  const label = customTodoInput.value.trim();
+  if (!label || !lastHousehold) return;
+  customTodoAddBtn.disabled = true;
+  try {
+    await addCustomTodo(lastHousehold.id, { label, assignee: selectedAssignee, byName: currentUserName() });
+    customTodoInput.value = "";
+  } catch (err) {
+    alert("저장 실패: " + err.message);
+  } finally {
+    customTodoAddBtn.disabled = false;
+  }
+});
+
+function renderCustomTodos() {
+  customTodoListEl.innerHTML = "";
+  customTodoEmptyEl.hidden = customTodos.length > 0;
+
+  for (const todo of customTodos) {
+    const li = document.createElement("li");
+    li.className = todo.done ? "checked" : "";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = todo.done;
+
+    const label = document.createElement("label");
+    label.textContent = todo.label;
+    label.style.cursor = "pointer";
+    label.addEventListener("click", () => checkbox.click());
+
+    const badge = document.createElement("span");
+    badge.className = `assignee-badge ${todo.assignee}`;
+    badge.textContent = ASSIGNEE_LABEL[todo.assignee] || "둘";
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "✕";
+    deleteBtn.className = "text-link";
+    deleteBtn.style.padding = "0 4px";
+    deleteBtn.style.margin = "0";
+
+    li.append(checkbox, label, badge, deleteBtn);
+
+    checkbox.addEventListener("change", async () => {
+      li.classList.toggle("checked", checkbox.checked);
+      try {
+        await toggleCustomTodo(lastHousehold.id, todo.id, checkbox.checked);
+      } catch (err) {
+        checkbox.checked = !checkbox.checked;
+        li.classList.toggle("checked", checkbox.checked);
+        alert("저장 실패: " + err.message);
+      }
+    });
+
+    deleteBtn.addEventListener("click", async () => {
+      try {
+        await deleteCustomTodo(lastHousehold.id, todo.id);
+      } catch (err) {
+        alert("삭제 실패: " + err.message);
+      }
+    });
+
+    customTodoListEl.appendChild(li);
+  }
+}
+
 // ---------- 전체 (내 정보 / 로그아웃) ----------
 
 const settingsRoleRow = document.getElementById("settings-role-row");
@@ -971,8 +1065,13 @@ onAuthStateChanged(auth, async (user) => {
       unsubscribeCheckin();
       unsubscribeCheckin = null;
     }
+    if (unsubscribeCustomTodos) {
+      unsubscribeCustomTodos();
+      unsubscribeCustomTodos = null;
+    }
     recentEvents = [];
     todayCheckin = null;
+    customTodos = [];
     statusEl.textContent = "로그인되지 않음";
     loginBtn.hidden = false;
     logoutBtn.hidden = true;

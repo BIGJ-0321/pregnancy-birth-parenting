@@ -176,6 +176,30 @@ textarea {
   font-weight: 600;
 }
 
+.assignee-picker {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.assignee-choice {
+  flex: 1;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.assignee-choice.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 600;
+}
+
 #login-btn {
   background: var(--accent);
   color: var(--bg);
