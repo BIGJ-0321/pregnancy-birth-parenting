@@ -1,4 +1,4 @@
-import { auth, googleProvider } from "./firebase.js?v=7";
+import { auth, googleProvider } from "./firebase.js?v=8";
 import {
   signInWithPopup,
   signOut,
@@ -19,9 +19,9 @@ import {
   saveNextCheckup,
   saveProfile,
   setMemberRole,
-} from "./household.js?v=7";
-import { SITUATION_TAGS } from "./tags.js?v=7";
-import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=7";
+} from "./household.js?v=8";
+import { SITUATION_TAGS } from "./tags.js?v=8";
+import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=8";
 import {
   getWeeklyInfo,
   getChecklistForWeek,
@@ -29,9 +29,9 @@ import {
   getMomCaution,
   MEDICAL_DISCLAIMER,
   CHECKLIST_ITEMS,
-} from "./weeklyContent.js?v=7";
-import { SYMPTOMS } from "./symptomsContent.js?v=7";
-import { CANIDO_ITEMS } from "./canidoContent.js?v=7";
+} from "./weeklyContent.js?v=8";
+import { SYMPTOMS } from "./symptomsContent.js?v=8";
+import { CANIDO_ITEMS } from "./canidoContent.js?v=8";
 
 // ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 
@@ -87,9 +87,12 @@ function watchHousehold(householdId) {
     }
   });
 
-  unsubscribeEvents = subscribeRecentEvents(householdId, 5, (events) => {
+  unsubscribeEvents = subscribeRecentEvents(householdId, 20, (events) => {
     recentEvents = events;
-    if (lastHousehold) renderHome(lastHousehold);
+    if (lastHousehold) {
+      renderHome(lastHousehold);
+      renderVisits();
+    }
   });
 
   unsubscribeCheckin = subscribeTodayCheckin(householdId, getTodayDateStr(), (checkin) => {
@@ -480,14 +483,11 @@ function formatRelativeTime(at) {
   return `${diffDay}일 전`;
 }
 
-function renderRecentEvents() {
-  if (recentEvents.length === 0) {
-    recentEventsCard.hidden = true;
-    return;
-  }
-  recentEventsCard.hidden = false;
-  recentEventsListEl.innerHTML = "";
-  for (const event of recentEvents) {
+const EVENT_PREFIX = { symptom: "🩺 ", visit: "🏥 " };
+
+function renderEventList(listEl, events) {
+  listEl.innerHTML = "";
+  for (const event of events) {
     const li = document.createElement("li");
 
     const meta = document.createElement("span");
@@ -496,11 +496,22 @@ function renderRecentEvents() {
     li.appendChild(meta);
     li.appendChild(document.createElement("br"));
 
-    const prefix = event.type === "symptom" ? "🩺 " : "";
-    li.appendChild(document.createTextNode(prefix + event.rawText));
+    li.appendChild(document.createTextNode((EVENT_PREFIX[event.type] || "") + event.rawText));
 
-    recentEventsListEl.appendChild(li);
+    listEl.appendChild(li);
   }
+}
+
+function renderRecentEvents() {
+  const recent = recentEvents.slice(0, 5);
+  recentEventsCard.hidden = recent.length === 0;
+  renderEventList(recentEventsListEl, recent);
+}
+
+function renderVisits() {
+  const visits = recentEvents.filter((e) => e.type === "visit");
+  visitEmptyEl.hidden = visits.length > 0;
+  renderEventList(visitListEl, visits);
 }
 
 // role-toggle/todo-summary-link/partner-feed는 CSS에서 display:flex를 고정으로 주기 때문에,
@@ -613,6 +624,24 @@ const todoEmptyEl = document.getElementById("todo-empty");
 const checkupDateInput = document.getElementById("checkup-date-input");
 const saveCheckupBtn = document.getElementById("save-checkup-btn");
 const checkupSavedTextEl = document.getElementById("checkup-saved-text");
+const visitListEl = document.getElementById("visit-list");
+const visitEmptyEl = document.getElementById("visit-empty");
+const visitInput = document.getElementById("visit-input");
+const visitSubmitBtn = document.getElementById("visit-submit-btn");
+
+visitSubmitBtn.addEventListener("click", async () => {
+  const text = visitInput.value.trim();
+  if (!text || !lastHousehold) return;
+  visitSubmitBtn.disabled = true;
+  try {
+    await addEvent(lastHousehold.id, { type: "visit", rawText: text, byName: currentUserName() });
+    visitInput.value = "";
+  } catch (err) {
+    alert("저장 실패: " + err.message);
+  } finally {
+    visitSubmitBtn.disabled = false;
+  }
+});
 const ASSIGNEE_LABEL = { mom: "엄", dad: "아", both: "둘" };
 
 saveCheckupBtn.addEventListener("click", async () => {
@@ -631,6 +660,7 @@ saveCheckupBtn.addEventListener("click", async () => {
 function renderTodos(household) {
   checkupDateInput.value = household.nextCheckupDate || "";
   checkupSavedTextEl.textContent = "";
+  renderVisits();
 
   const { week, isBorn } = getPregnancyStatus(household.dueDate, household.pregnancyReference);
   if (isBorn) {

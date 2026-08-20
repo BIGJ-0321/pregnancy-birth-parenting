@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>고릴라니</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-  <link rel="stylesheet" href="css/style.css?v=7" />
-  <link rel="manifest" href="manifest.json?v=7" />
-  <link rel="icon" type="image/png" href="icon.png?v=7" />
-  <link rel="apple-touch-icon" href="icon.png?v=7" />
+  <link rel="stylesheet" href="css/style.css?v=8" />
+  <link rel="manifest" href="manifest.json?v=8" />
+  <link rel="icon" type="image/png" href="icon.png?v=8" />
+  <link rel="apple-touch-icon" href="icon.png?v=8" />
   <meta name="theme-color" content="#f5ede0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="고릴라니" />
@@ -210,6 +210,14 @@
         <p id="checkup-saved-text" class="muted" style="margin-top:8px;"></p>
       </div>
 
+      <div class="card">
+        <p class="field-label" style="margin-top:0;">방문 기록</p>
+        <ul id="visit-list" class="event-list"></ul>
+        <p id="visit-empty" class="muted" hidden>아직 남긴 방문 기록이 없어요.</p>
+        <textarea id="visit-input" rows="2" placeholder="오늘 병원 다녀왔다면 메모 남기기..." style="margin-top:8px;"></textarea>
+        <button id="visit-submit-btn" style="margin-top:8px; width:100%; background:var(--accent); color:var(--bg);">기록하기</button>
+      </div>
+
       <p class="field-label">이번 주 할 일</p>
       <ul id="todo-list" class="checklist-list"></ul>
       <p id="todo-empty" class="muted" hidden>이번 주에 해당하는 항목이 없어요.</p>
@@ -294,6 +302,6 @@
     </nav>
   </div>
 
-  <script type="module" src="js/main.js?v=7"></script>
+  <script type="module" src="js/main.js?v=8"></script>
 </body>
 </html>
