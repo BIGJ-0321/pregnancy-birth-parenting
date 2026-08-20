@@ -1,4 +1,4 @@
-import { auth, googleProvider } from "./firebase.js?v=4";
+import { auth, googleProvider } from "./firebase.js?v=5";
 import {
   signInWithPopup,
   signOut,
@@ -16,9 +16,9 @@ import {
   saveNextCheckup,
   saveProfile,
   setMemberRole,
-} from "./household.js?v=4";
-import { SITUATION_TAGS } from "./tags.js?v=4";
-import { calcPregnancyWeek, dueDateFromWeek, dueDateFromLMP, daysUntil } from "./pregnancy.js?v=4";
+} from "./household.js?v=5";
+import { SITUATION_TAGS } from "./tags.js?v=5";
+import { getPregnancyStatus, dueDateFromLMP, daysUntil } from "./pregnancy.js?v=5";
 import {
   getWeeklyInfo,
   getChecklistForWeek,
@@ -26,9 +26,9 @@ import {
   getMomCaution,
   MEDICAL_DISCLAIMER,
   CHECKLIST_ITEMS,
-} from "./weeklyContent.js?v=4";
-import { SYMPTOMS } from "./symptomsContent.js?v=4";
-import { CANIDO_ITEMS } from "./canidoContent.js?v=4";
+} from "./weeklyContent.js?v=5";
+import { SYMPTOMS } from "./symptomsContent.js?v=5";
+import { CANIDO_ITEMS } from "./canidoContent.js?v=5";
 
 // ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 
@@ -130,14 +130,13 @@ const wizardJoinBtn = document.getElementById("wizard-join-btn");
 const wizardConnectErrorEl = document.getElementById("wizard-connect-error");
 
 const wizardDueModeRadios = document.querySelectorAll('input[name="wizard-due-mode"]');
-const wizardDueDateField = document.getElementById("wizard-due-date-field");
-const wizardDueDateInput = document.getElementById("wizard-due-date-input");
-const wizardUnknownField = document.getElementById("wizard-unknown-field");
-const wizardUnknownModeRadios = document.querySelectorAll('input[name="wizard-unknown-mode"]');
+const wizardHospitalField = document.getElementById("wizard-hospital-field");
+const wizardRefDateInput = document.getElementById("wizard-ref-date-input");
+const wizardRefWeekInput = document.getElementById("wizard-ref-week-input");
+const wizardRefDayInput = document.getElementById("wizard-ref-day-input");
+const wizardHospitalDueDateInput = document.getElementById("wizard-hospital-due-date-input");
 const wizardLmpField = document.getElementById("wizard-lmp-field");
 const wizardLmpInput = document.getElementById("wizard-lmp-input");
-const wizardWeekField = document.getElementById("wizard-week-field");
-const wizardWeekInput = document.getElementById("wizard-week-input");
 const wizardTagsListEl = document.getElementById("wizard-tags-list");
 const wizardDueNextBtn = document.getElementById("wizard-due-next-btn");
 const wizardDueErrorEl = document.getElementById("wizard-due-error");
@@ -234,45 +233,43 @@ wizardJoinBtn.addEventListener("click", async () => {
 for (const radio of wizardDueModeRadios) {
   radio.addEventListener("change", () => {
     const mode = document.querySelector('input[name="wizard-due-mode"]:checked').value;
-    wizardDueDateField.hidden = mode !== "due-date";
-    wizardUnknownField.hidden = mode !== "unknown";
-  });
-}
-
-for (const radio of wizardUnknownModeRadios) {
-  radio.addEventListener("change", () => {
-    const mode = document.querySelector('input[name="wizard-unknown-mode"]:checked').value;
+    wizardHospitalField.hidden = mode !== "hospital";
     wizardLmpField.hidden = mode !== "lmp";
-    wizardWeekField.hidden = mode !== "week";
   });
 }
 
 wizardDueNextBtn.addEventListener("click", async () => {
   const mode = document.querySelector('input[name="wizard-due-mode"]:checked').value;
   let dueDate;
+  let pregnancyReference = null;
 
-  if (mode === "due-date") {
-    if (!wizardDueDateInput.value) {
+  if (mode === "hospital") {
+    const week = Number(wizardRefWeekInput.value);
+    const day = Number(wizardRefDayInput.value);
+    if (!wizardRefDateInput.value) {
+      showWizardDueError("병원에서 정보를 알려준 날짜를 입력해줘.");
+      return;
+    }
+    if (!week || week < 1 || week > 42) {
+      showWizardDueError("임신 주수를 1~42 사이로 입력해줘.");
+      return;
+    }
+    if (wizardRefDayInput.value === "" || day < 0 || day > 6) {
+      showWizardDueError("일수를 0~6 사이로 입력해줘.");
+      return;
+    }
+    if (!wizardHospitalDueDateInput.value) {
       showWizardDueError("출산 예정일을 입력해줘.");
       return;
     }
-    dueDate = wizardDueDateInput.value;
+    dueDate = wizardHospitalDueDateInput.value;
+    pregnancyReference = { date: wizardRefDateInput.value, week, day };
   } else {
-    const unknownMode = document.querySelector('input[name="wizard-unknown-mode"]:checked').value;
-    if (unknownMode === "lmp") {
-      if (!wizardLmpInput.value) {
-        showWizardDueError("마지막 생리 시작일을 입력해줘.");
-        return;
-      }
-      dueDate = dueDateFromLMP(wizardLmpInput.value);
-    } else {
-      const week = Number(wizardWeekInput.value);
-      if (!week || week < 1 || week > 42) {
-        showWizardDueError("현재 주차를 1~42 사이로 입력해줘.");
-        return;
-      }
-      dueDate = dueDateFromWeek(week);
+    if (!wizardLmpInput.value) {
+      showWizardDueError("마지막 생리 시작일을 입력해줘.");
+      return;
     }
+    dueDate = dueDateFromLMP(wizardLmpInput.value);
   }
 
   const selectedTags = Array.from(
@@ -288,7 +285,7 @@ wizardDueNextBtn.addEventListener("click", async () => {
       wizardInviteCode = inviteCode;
     }
     await setMemberRole(wizardHouseholdId, uid, wizardRole);
-    await saveHouseholdSetup(wizardHouseholdId, { dueDate, tags: selectedTags });
+    await saveHouseholdSetup(wizardHouseholdId, { dueDate, tags: selectedTags, pregnancyReference });
     goToStep("invite");
   } catch (err) {
     showWizardDueError(err.message);
@@ -406,7 +403,7 @@ function setVisible(el, visible, displayValue = "flex") {
 
 function renderHome(household) {
   lastHousehold = household;
-  const { week, dayOfWeek, isBorn } = calcPregnancyWeek(household.dueDate);
+  const { week, dayOfWeek, isBorn } = getPregnancyStatus(household.dueDate, household.pregnancyReference);
 
   if (isBorn) {
     weekResultTitleEl.textContent = "출산 예정일이 지났어요";
@@ -456,7 +453,7 @@ function renderHome(household) {
 }
 
 function renderRoleCard(household) {
-  const { week, isBorn } = calcPregnancyWeek(household.dueDate);
+  const { week, isBorn } = getPregnancyStatus(household.dueDate, household.pregnancyReference);
   if (isBorn) return;
   if (currentRole === "mom") {
     roleCardMainTitleEl.textContent = "내 몸의 변화";
@@ -512,7 +509,7 @@ function renderTodos(household) {
   checkupDateInput.value = household.nextCheckupDate || "";
   checkupSavedTextEl.textContent = "";
 
-  const { week, isBorn } = calcPregnancyWeek(household.dueDate);
+  const { week, isBorn } = getPregnancyStatus(household.dueDate, household.pregnancyReference);
   if (isBorn) {
     todoListEl.innerHTML = "";
     todoEmptyEl.hidden = false;
@@ -564,10 +561,13 @@ const spouseStatusTextEl = document.getElementById("spouse-status-text");
 const spouseInviteCodeEl = document.getElementById("spouse-invite-code");
 
 const settingsAgeInput = document.getElementById("settings-age-input");
-const settingsDueDateInput = document.getElementById("settings-due-date-input");
-const settingsDueDateField = document.getElementById("settings-due-date-field");
-const settingsCurrentWeekInput = document.getElementById("settings-current-week-input");
-const settingsCurrentWeekField = document.getElementById("settings-current-week-field");
+const settingsHospitalField = document.getElementById("settings-hospital-field");
+const settingsRefDateInput = document.getElementById("settings-ref-date-input");
+const settingsRefWeekInput = document.getElementById("settings-ref-week-input");
+const settingsRefDayInput = document.getElementById("settings-ref-day-input");
+const settingsHospitalDueDateInput = document.getElementById("settings-hospital-due-date-input");
+const settingsLmpField = document.getElementById("settings-lmp-field");
+const settingsLmpInput = document.getElementById("settings-lmp-input");
 const settingsDueModeRadios = document.querySelectorAll('input[name="settings-due-mode"]');
 const saveSettingsBtn = document.getElementById("save-settings-btn");
 const settingsSavedTextEl = document.getElementById("settings-saved-text");
@@ -575,8 +575,8 @@ const settingsSavedTextEl = document.getElementById("settings-saved-text");
 for (const radio of settingsDueModeRadios) {
   radio.addEventListener("change", () => {
     const mode = document.querySelector('input[name="settings-due-mode"]:checked').value;
-    settingsDueDateField.hidden = mode !== "due-date";
-    settingsCurrentWeekField.hidden = mode !== "current-week";
+    settingsHospitalField.hidden = mode !== "hospital";
+    settingsLmpField.hidden = mode !== "lmp";
   });
 }
 
@@ -607,7 +607,12 @@ function renderSettings(household) {
   }
 
   settingsAgeInput.value = household.momAge || "";
-  settingsDueDateInput.value = household.dueDate || "";
+  settingsHospitalDueDateInput.value = household.dueDate || "";
+  if (household.pregnancyReference) {
+    settingsRefDateInput.value = household.pregnancyReference.date || "";
+    settingsRefWeekInput.value = household.pregnancyReference.week || "";
+    settingsRefDayInput.value = household.pregnancyReference.day ?? "";
+  }
   settingsSavedTextEl.textContent = "";
 }
 
@@ -615,27 +620,42 @@ saveSettingsBtn.addEventListener("click", async () => {
   if (!lastHousehold) return;
   const mode = document.querySelector('input[name="settings-due-mode"]:checked').value;
   let dueDate;
+  let pregnancyReference = null;
 
-  if (mode === "due-date") {
-    if (!settingsDueDateInput.value) {
+  if (mode === "hospital") {
+    const week = Number(settingsRefWeekInput.value);
+    const day = Number(settingsRefDayInput.value);
+    if (!settingsRefDateInput.value) {
+      settingsSavedTextEl.textContent = "병원에서 정보를 알려준 날짜를 입력해줘.";
+      return;
+    }
+    if (!week || week < 1 || week > 42) {
+      settingsSavedTextEl.textContent = "임신 주수를 1~42 사이로 입력해줘.";
+      return;
+    }
+    if (settingsRefDayInput.value === "" || day < 0 || day > 6) {
+      settingsSavedTextEl.textContent = "일수를 0~6 사이로 입력해줘.";
+      return;
+    }
+    if (!settingsHospitalDueDateInput.value) {
       settingsSavedTextEl.textContent = "출산 예정일을 입력해줘.";
       return;
     }
-    dueDate = settingsDueDateInput.value;
+    dueDate = settingsHospitalDueDateInput.value;
+    pregnancyReference = { date: settingsRefDateInput.value, week, day };
   } else {
-    const week = Number(settingsCurrentWeekInput.value);
-    if (!week || week < 1 || week > 42) {
-      settingsSavedTextEl.textContent = "현재 주차를 1~42 사이로 입력해줘.";
+    if (!settingsLmpInput.value) {
+      settingsSavedTextEl.textContent = "마지막 생리 시작일을 입력해줘.";
       return;
     }
-    dueDate = dueDateFromWeek(week);
+    dueDate = dueDateFromLMP(settingsLmpInput.value);
   }
 
   const age = settingsAgeInput.value ? Number(settingsAgeInput.value) : null;
 
   saveSettingsBtn.disabled = true;
   try {
-    await saveProfile(lastHousehold.id, { age, dueDate });
+    await saveProfile(lastHousehold.id, { age, dueDate, pregnancyReference });
     settingsSavedTextEl.textContent = "저장됐어요.";
   } catch (err) {
     settingsSavedTextEl.textContent = "저장 실패: " + err.message;

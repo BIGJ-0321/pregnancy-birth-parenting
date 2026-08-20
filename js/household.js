@@ -1,4 +1,4 @@
-import { db } from "./firebase.js?v=4";
+import { db } from "./firebase.js?v=5";
 import {
   doc,
   getDoc,
@@ -65,10 +65,12 @@ export async function getHousehold(householdId) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
-export async function saveHouseholdSetup(householdId, { dueDate, tags }) {
+// pregnancyReference: { date, week, day } (병원 기준 정보) 또는 null (LMP 계산 방식이라 기준 정보 없음)
+export async function saveHouseholdSetup(householdId, { dueDate, tags, pregnancyReference }) {
   await updateDoc(doc(db, "households", householdId), {
     dueDate,
     tags,
+    pregnancyReference: pregnancyReference || null,
   });
 }
 
@@ -95,10 +97,11 @@ export async function setMemberRole(householdId, uid, role) {
   });
 }
 
-export async function saveProfile(householdId, { age, dueDate }) {
+export async function saveProfile(householdId, { age, dueDate, pregnancyReference }) {
   await updateDoc(doc(db, "households", householdId), {
     momAge: age,
     dueDate,
+    pregnancyReference: pregnancyReference || null,
   });
 }
 

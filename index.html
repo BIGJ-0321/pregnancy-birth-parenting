@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>고릴라니</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
-  <link rel="manifest" href="manifest.json?v=4" />
-  <link rel="icon" type="image/png" href="icon.png?v=4" />
-  <link rel="apple-touch-icon" href="icon.png?v=4" />
+  <link rel="stylesheet" href="css/style.css?v=5" />
+  <link rel="manifest" href="manifest.json?v=5" />
+  <link rel="icon" type="image/png" href="icon.png?v=5" />
+  <link rel="apple-touch-icon" href="icon.png?v=5" />
   <meta name="theme-color" content="#f5ede0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="고릴라니" />
@@ -55,31 +55,38 @@
       <h2>출산 예정일은 언제인가요?</h2>
 
       <div class="radio-row">
-        <label><input type="radio" name="wizard-due-mode" value="due-date" checked /> 날짜를 알아요</label>
-        <label><input type="radio" name="wizard-due-mode" value="unknown" /> 예정일을 아직 몰라요</label>
+        <label><input type="radio" name="wizard-due-mode" value="hospital" checked /> 병원에서 받은 정보가 있어요</label>
+        <label><input type="radio" name="wizard-due-mode" value="lmp" /> 아직 병원 전이에요 (마지막 생리일로 계산)</label>
       </div>
 
-      <div id="wizard-due-date-field">
-        <input id="wizard-due-date-input" type="date" style="margin-top:10px;" />
+      <div id="wizard-hospital-field">
+        <label class="field-label" for="wizard-ref-date-input">이 정보를 알려준 날짜</label>
+        <input id="wizard-ref-date-input" type="date" />
+
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <div style="flex:1;">
+            <label class="field-label" for="wizard-ref-week-input" style="margin-top:0;">임신 주수</label>
+            <input id="wizard-ref-week-input" type="number" min="1" max="42" placeholder="예: 13" />
+          </div>
+          <div style="flex:1;">
+            <label class="field-label" for="wizard-ref-day-input" style="margin-top:0;">일수</label>
+            <input id="wizard-ref-day-input" type="number" min="0" max="6" placeholder="예: 2" />
+          </div>
+        </div>
+
+        <label class="field-label" for="wizard-hospital-due-date-input">출산 예정일</label>
+        <input id="wizard-hospital-due-date-input" type="date" />
       </div>
 
-      <div id="wizard-unknown-field" hidden>
-        <div class="radio-row">
-          <label><input type="radio" name="wizard-unknown-mode" value="lmp" checked /> 마지막 생리 시작일로 계산할게요</label>
-          <label><input type="radio" name="wizard-unknown-mode" value="week" /> 임신 몇 주차인지 알아요</label>
-        </div>
-        <div id="wizard-lmp-field">
-          <input id="wizard-lmp-input" type="date" />
-        </div>
-        <div id="wizard-week-field" hidden>
-          <input id="wizard-week-input" type="number" min="1" max="42" placeholder="예: 8" />
-        </div>
+      <div id="wizard-lmp-field" hidden>
+        <label class="field-label" for="wizard-lmp-input">마지막 생리 시작일</label>
+        <input id="wizard-lmp-input" type="date" />
       </div>
 
       <p class="field-label">해당하는 상황이 있으면 선택해줘 (없으면 넘어가도 돼)</p>
       <div id="wizard-tags-list" class="tags-list"></div>
 
-      <button id="wizard-due-next-btn" style="margin-top:20px; width:100%; background:#4285f4; color:white;">다음</button>
+      <button id="wizard-due-next-btn" style="margin-top:20px; width:100%; background:var(--accent); color:var(--bg);">다음</button>
       <p id="wizard-due-error" class="error" hidden></p>
     </div>
 
@@ -92,7 +99,7 @@
 
       <div id="invite-code-area" hidden>
         <p class="invite-code" id="wizard-invite-code-display"></p>
-        <button id="wizard-finish-btn" style="margin-top:16px; width:100%; background:#4285f4; color:white;">시작하기</button>
+        <button id="wizard-finish-btn" style="margin-top:16px; width:100%; background:var(--accent); color:var(--bg);">시작하기</button>
       </div>
     </div>
 
@@ -208,21 +215,35 @@
         <input id="settings-age-input" type="number" min="15" max="60" placeholder="예: 32" />
 
         <div class="radio-row" style="margin-top:16px;">
-          <label><input type="radio" name="settings-due-mode" value="due-date" checked /> 출산 예정일을 알아요</label>
-          <label><input type="radio" name="settings-due-mode" value="current-week" /> 예정일은 모르고 현재 주차만 알아요</label>
+          <label><input type="radio" name="settings-due-mode" value="hospital" checked /> 병원에서 받은 정보가 있어요</label>
+          <label><input type="radio" name="settings-due-mode" value="lmp" /> 아직 병원 전이에요 (마지막 생리일로 계산)</label>
         </div>
 
-        <div id="settings-due-date-field">
-          <label class="field-label" for="settings-due-date-input">출산 예정일</label>
-          <input id="settings-due-date-input" type="date" />
+        <div id="settings-hospital-field">
+          <label class="field-label" for="settings-ref-date-input">이 정보를 알려준 날짜</label>
+          <input id="settings-ref-date-input" type="date" />
+
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <div style="flex:1;">
+              <label class="field-label" for="settings-ref-week-input" style="margin-top:0;">임신 주수</label>
+              <input id="settings-ref-week-input" type="number" min="1" max="42" placeholder="예: 13" />
+            </div>
+            <div style="flex:1;">
+              <label class="field-label" for="settings-ref-day-input" style="margin-top:0;">일수</label>
+              <input id="settings-ref-day-input" type="number" min="0" max="6" placeholder="예: 2" />
+            </div>
+          </div>
+
+          <label class="field-label" for="settings-hospital-due-date-input">출산 예정일</label>
+          <input id="settings-hospital-due-date-input" type="date" />
         </div>
 
-        <div id="settings-current-week-field" hidden>
-          <label class="field-label" for="settings-current-week-input">현재 임신 주차</label>
-          <input id="settings-current-week-input" type="number" min="1" max="42" placeholder="예: 8" />
+        <div id="settings-lmp-field" hidden>
+          <label class="field-label" for="settings-lmp-input">마지막 생리 시작일</label>
+          <input id="settings-lmp-input" type="date" />
         </div>
 
-        <button id="save-settings-btn" style="margin-top:20px; width:100%; background:#4285f4; color:white;">저장하기</button>
+        <button id="save-settings-btn" style="margin-top:20px; width:100%; background:var(--accent); color:var(--bg);">저장하기</button>
         <p id="settings-saved-text" class="muted" style="margin-top:8px;"></p>
       </div>
 
@@ -249,6 +270,6 @@
     </nav>
   </div>
 
-  <script type="module" src="js/main.js?v=4"></script>
+  <script type="module" src="js/main.js?v=5"></script>
 </body>
 </html>
