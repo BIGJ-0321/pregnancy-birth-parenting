@@ -1,4 +1,4 @@
-import { auth, googleProvider } from "./firebase.js?v=9";
+import { auth, googleProvider } from "./firebase.js?v=10";
 import {
   signInWithPopup,
   signOut,
@@ -23,9 +23,9 @@ import {
   saveNextCheckup,
   saveProfile,
   setMemberRole,
-} from "./household.js?v=9";
-import { SITUATION_TAGS } from "./tags.js?v=9";
-import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=9";
+} from "./household.js?v=10";
+import { SITUATION_TAGS } from "./tags.js?v=10";
+import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=10";
 import {
   getWeeklyInfo,
   getChecklistForWeek,
@@ -33,9 +33,9 @@ import {
   getMomCaution,
   MEDICAL_DISCLAIMER,
   CHECKLIST_ITEMS,
-} from "./weeklyContent.js?v=9";
-import { SYMPTOMS } from "./symptomsContent.js?v=9";
-import { CANIDO_ITEMS } from "./canidoContent.js?v=9";
+} from "./weeklyContent.js?v=10";
+import { SYMPTOMS } from "./symptomsContent.js?v=10";
+import { CANIDO_ITEMS } from "./canidoContent.js?v=10";
 
 // ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 
@@ -724,7 +724,20 @@ const customTodoEmptyEl = document.getElementById("custom-todo-empty");
 const customTodoInput = document.getElementById("custom-todo-input");
 const customTodoAddBtn = document.getElementById("custom-todo-add-btn");
 const customTodoAssigneeRow = document.getElementById("custom-todo-assignee-row");
+const customTodoAddTrigger = document.getElementById("custom-todo-add-trigger");
+const customTodoForm = document.getElementById("custom-todo-form");
 let selectedAssignee = "both";
+
+customTodoAddTrigger.addEventListener("click", () => {
+  customTodoAddTrigger.hidden = true;
+  customTodoForm.hidden = false;
+  customTodoInput.focus();
+});
+
+function collapseCustomTodoForm() {
+  customTodoForm.hidden = true;
+  customTodoAddTrigger.hidden = false;
+}
 
 customTodoAssigneeRow.querySelectorAll(".assignee-choice").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -742,6 +755,7 @@ customTodoAddBtn.addEventListener("click", async () => {
   try {
     await addCustomTodo(lastHousehold.id, { label, assignee: selectedAssignee, byName: currentUserName() });
     customTodoInput.value = "";
+    collapseCustomTodoForm();
   } catch (err) {
     alert("저장 실패: " + err.message);
   } finally {

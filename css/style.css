@@ -193,6 +193,20 @@ textarea {
   color: var(--text-secondary);
 }
 
+.add-trigger {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
 .assignee-choice.selected {
   border-color: var(--accent);
   background: var(--accent-bg);

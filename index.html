@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>고릴라니</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-  <link rel="stylesheet" href="css/style.css?v=9" />
-  <link rel="manifest" href="manifest.json?v=9" />
-  <link rel="icon" type="image/png" href="icon.png?v=9" />
-  <link rel="apple-touch-icon" href="icon.png?v=9" />
+  <link rel="stylesheet" href="css/style.css?v=10" />
+  <link rel="manifest" href="manifest.json?v=10" />
+  <link rel="icon" type="image/png" href="icon.png?v=10" />
+  <link rel="apple-touch-icon" href="icon.png?v=10" />
   <meta name="theme-color" content="#f5ede0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="고릴라니" />
@@ -226,7 +226,8 @@
       <ul id="custom-todo-list" class="checklist-list"></ul>
       <p id="custom-todo-empty" class="muted" hidden>아직 직접 추가한 할 일이 없어요.</p>
 
-      <div class="card">
+      <button type="button" id="custom-todo-add-trigger" class="add-trigger">+ 할 일 직접 추가하기</button>
+      <div class="card" id="custom-todo-form" hidden>
         <input id="custom-todo-input" type="text" placeholder="할 일을 적어줘" />
         <div class="assignee-picker" id="custom-todo-assignee-row">
           <button class="assignee-choice selected" data-assignee="both">둘 다</button>
@@ -257,8 +258,8 @@
       <div class="card">
         <p class="field-label" style="margin-top:0;">내 정보</p>
 
-        <label class="field-label" for="settings-age-input">산모 나이</label>
-        <input id="settings-age-input" type="number" min="15" max="60" placeholder="예: 32" />
+        <label class="field-label" for="settings-age-input">산모 나이 (만 나이)</label>
+        <input id="settings-age-input" type="number" min="15" max="60" placeholder="예: 32 (만 나이)" />
 
         <div class="radio-row" style="margin-top:16px;">
           <label><input type="radio" name="settings-due-mode" value="hospital" checked /> 병원에서 받은 정보가 있어요</label>
@@ -316,6 +317,6 @@
     </nav>
   </div>
 
-  <script type="module" src="js/main.js?v=9"></script>
+  <script type="module" src="js/main.js?v=10"></script>
 </body>
 </html>
