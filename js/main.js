@@ -428,7 +428,10 @@ function setRole(role) {
   roleDadBtn.classList.toggle("active", role === "dad");
   document.body.dataset.role = role;
   noteCardEl.hidden = role !== "mom";
-  if (lastHousehold) renderRoleCard(lastHousehold);
+  if (lastHousehold) {
+    renderRoleCard(lastHousehold);
+    renderMoodCard(lastHousehold);
+  }
 }
 
 const roleToggleEl = document.querySelector(".role-toggle");
@@ -471,8 +474,7 @@ moodButtonsEl.querySelectorAll(".mood-btn").forEach((btn) => {
 });
 
 function renderMoodCard(household) {
-  const myRole = household.roles?.[auth.currentUser.uid];
-  const isMom = myRole === "mom";
+  const isMom = currentRole === "mom";
 
   moodCardTitleEl.textContent = isMom ? "오늘 컨디션은 어때요?" : "오늘 아내의 컨디션";
   setVisible(moodButtonsEl, isMom);
