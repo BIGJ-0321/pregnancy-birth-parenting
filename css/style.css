@@ -236,7 +236,9 @@ textarea {
 }
 
 .mood-emoji {
-  font-size: 1.3rem;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
 }
 
 .mood-label {
