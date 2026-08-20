@@ -1,4 +1,4 @@
-import { auth, googleProvider } from "./firebase.js?v=6";
+import { auth, googleProvider } from "./firebase.js?v=7";
 import {
   signInWithPopup,
   signOut,
@@ -14,12 +14,14 @@ import {
   addEvent,
   subscribeRecentEvents,
   getLatestChecklistActivity,
+  saveTodayMood,
+  subscribeTodayCheckin,
   saveNextCheckup,
   saveProfile,
   setMemberRole,
-} from "./household.js?v=6";
-import { SITUATION_TAGS } from "./tags.js?v=6";
-import { getPregnancyStatus, dueDateFromLMP, daysUntil } from "./pregnancy.js?v=6";
+} from "./household.js?v=7";
+import { SITUATION_TAGS } from "./tags.js?v=7";
+import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=7";
 import {
   getWeeklyInfo,
   getChecklistForWeek,
@@ -27,9 +29,9 @@ import {
   getMomCaution,
   MEDICAL_DISCLAIMER,
   CHECKLIST_ITEMS,
-} from "./weeklyContent.js?v=6";
-import { SYMPTOMS } from "./symptomsContent.js?v=6";
-import { CANIDO_ITEMS } from "./canidoContent.js?v=6";
+} from "./weeklyContent.js?v=7";
+import { SYMPTOMS } from "./symptomsContent.js?v=7";
+import { CANIDO_ITEMS } from "./canidoContent.js?v=7";
 
 // ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 
@@ -67,10 +69,13 @@ function currentUserName() {
 
 let recentEvents = [];
 let unsubscribeEvents = null;
+let todayCheckin = null;
+let unsubscribeCheckin = null;
 
 function watchHousehold(householdId) {
   if (unsubscribeHousehold) unsubscribeHousehold();
   if (unsubscribeEvents) unsubscribeEvents();
+  if (unsubscribeCheckin) unsubscribeCheckin();
 
   let firstRender = true;
   unsubscribeHousehold = subscribeHousehold(householdId, (household) => {
@@ -84,6 +89,11 @@ function watchHousehold(householdId) {
 
   unsubscribeEvents = subscribeRecentEvents(householdId, 5, (events) => {
     recentEvents = events;
+    if (lastHousehold) renderHome(lastHousehold);
+  });
+
+  unsubscribeCheckin = subscribeTodayCheckin(householdId, getTodayDateStr(), (checkin) => {
+    todayCheckin = checkin;
     if (lastHousehold) renderHome(lastHousehold);
   });
 }
@@ -381,6 +391,9 @@ const noteInput = document.getElementById("note-input");
 const noteSubmitBtn = document.getElementById("note-submit-btn");
 const recentEventsCard = document.getElementById("recent-events-card");
 const recentEventsListEl = document.getElementById("recent-events-list");
+const moodButtonsEl = document.getElementById("mood-buttons");
+const moodReadonlyTextEl = document.getElementById("mood-readonly-text");
+const MOOD_LABELS = { good: "😊 좋음", ok: "🙂 괜찮음", hard: "😵 힘듦", very_hard: "🤢 매우힘듦" };
 const disclaimerEl = document.getElementById("disclaimer-text");
 disclaimerEl.textContent = MEDICAL_DISCLAIMER;
 
@@ -423,6 +436,38 @@ noteSubmitBtn.addEventListener("click", async () => {
     noteSubmitBtn.disabled = false;
   }
 });
+
+moodButtonsEl.querySelectorAll(".mood-btn").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    if (!lastHousehold) return;
+    btn.disabled = true;
+    try {
+      await saveTodayMood(lastHousehold.id, getTodayDateStr(), btn.dataset.mood, currentUserName());
+    } catch (err) {
+      alert("저장 실패: " + err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+});
+
+function renderMoodCard(household) {
+  const myRole = household.roles?.[auth.currentUser.uid];
+  const isMom = myRole === "mom";
+
+  setVisible(moodButtonsEl, isMom);
+  moodReadonlyTextEl.hidden = isMom;
+
+  if (isMom) {
+    moodButtonsEl.querySelectorAll(".mood-btn").forEach((btn) => {
+      btn.classList.toggle("selected", todayCheckin && btn.dataset.mood === todayCheckin.mood);
+    });
+  } else {
+    moodReadonlyTextEl.textContent = todayCheckin
+      ? `오늘 아내 컨디션: ${MOOD_LABELS[todayCheckin.mood]}`
+      : "아직 오늘 컨디션을 기록하지 않았어요.";
+  }
+}
 
 function formatRelativeTime(at) {
   const diffMs = Date.now() - at;
@@ -517,6 +562,7 @@ function renderHome(household) {
   }
 
   renderRecentEvents();
+  renderMoodCard(household);
   renderRoleCard(household);
   renderCheckupCard(household);
 
@@ -891,7 +937,12 @@ onAuthStateChanged(auth, async (user) => {
       unsubscribeEvents();
       unsubscribeEvents = null;
     }
+    if (unsubscribeCheckin) {
+      unsubscribeCheckin();
+      unsubscribeCheckin = null;
+    }
     recentEvents = [];
+    todayCheckin = null;
     statusEl.textContent = "로그인되지 않음";
     loginBtn.hidden = false;
     logoutBtn.hidden = true;

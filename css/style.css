@@ -139,6 +139,43 @@ textarea {
   font-size: 0.75rem;
 }
 
+.mood-row {
+  display: flex;
+  gap: 8px;
+}
+
+.mood-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  font-family: inherit;
+}
+
+.mood-emoji {
+  font-size: 1.3rem;
+}
+
+.mood-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.mood-btn.selected {
+  border: 2px solid var(--accent);
+  background: var(--accent-bg);
+}
+
+.mood-btn.selected .mood-label {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 #login-btn {
   background: var(--accent);
   color: var(--bg);

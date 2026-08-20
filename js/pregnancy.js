@@ -1,5 +1,13 @@
 const PREGNANCY_DAYS = 280; // 40주 기준 (LMP ~ 예정일)
 
+// 오늘 날짜를 YYYY-MM-DD로 (체크인 문서 ID 등에 사용)
+export function getTodayDateStr(today = new Date()) {
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 // 예정일 기준으로 현재 임신 주차/일수를 계산
 export function calcPregnancyWeek(dueDateStr, today = new Date()) {
   const dueDate = new Date(dueDateStr + "T00:00:00");

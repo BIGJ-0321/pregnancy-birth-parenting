@@ -42,6 +42,12 @@ service cloud.firestore {
           request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
         allow update, delete: if false;
       }
+
+      // 오늘의 컨디션 체크인 (문서ID = 날짜) - 가구 멤버만 읽고 쓸 수 있음
+      match /checkins/{checkinId} {
+        allow read, write: if request.auth != null &&
+          request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
+      }
     }
   }
 }

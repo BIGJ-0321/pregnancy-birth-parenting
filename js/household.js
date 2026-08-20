@@ -1,4 +1,4 @@
-import { db } from "./firebase.js?v=6";
+import { db } from "./firebase.js?v=7";
 import {
   doc,
   getDoc,
@@ -113,6 +113,20 @@ export async function saveProfile(householdId, { age, dueDate, pregnancyReferenc
 export async function saveNextCheckup(householdId, dateStr) {
   await updateDoc(doc(db, "households", householdId), {
     nextCheckupDate: dateStr,
+  });
+}
+
+export async function saveTodayMood(householdId, dateStr, mood, byName) {
+  await setDoc(doc(db, "households", householdId, "checkins", dateStr), {
+    mood,
+    byName,
+    at: Date.now(),
+  });
+}
+
+export function subscribeTodayCheckin(householdId, dateStr, callback) {
+  return onSnapshot(doc(db, "households", householdId, "checkins", dateStr), (snap) => {
+    callback(snap.exists() ? snap.data() : null);
   });
 }
 
