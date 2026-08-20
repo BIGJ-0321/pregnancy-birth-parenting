@@ -36,10 +36,11 @@ service cloud.firestore {
 
       allow delete: if false;
 
-      // 주차별 체크리스트 진행 상황
-      match /weekProgress/{weekId} {
-        allow read, write: if request.auth != null &&
+      // 자유 기록(사건 로그): 증상/메모 등 - 가구 멤버만 읽고 쓸 수 있음, 수정은 불가(기록은 남기고 지우지 않음)
+      match /events/{eventId} {
+        allow read, create: if request.auth != null &&
           request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
+        allow update, delete: if false;
       }
     }
   }

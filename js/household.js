@@ -1,4 +1,4 @@
-import { db } from "./firebase.js?v=5";
+import { db } from "./firebase.js?v=6";
 import {
   doc,
   getDoc,
@@ -6,6 +6,11 @@ import {
   updateDoc,
   arrayUnion,
   onSnapshot,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  limit,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // 헷갈리는 글자(0,O,1,I) 빼고 초대 코드 생성
@@ -111,37 +116,42 @@ export async function saveNextCheckup(householdId, dateStr) {
   });
 }
 
-export async function addSymptomRecord(householdId, symptom, byName) {
-  await updateDoc(doc(db, "households", householdId), {
-    symptomLog: arrayUnion({ symptom, byName, at: Date.now() }),
+// 자유 기록 하나 추가 (자유 메모, 증상 기록 등 전부 이걸로 통일)
+// type: "note" | "symptom" 등
+export async function addEvent(householdId, { type, rawText, byName }) {
+  await addDoc(collection(db, "households", householdId, "events"), {
+    type,
+    rawText,
+    byName,
+    at: Date.now(),
   });
 }
 
-// 홈 화면 상단 "배우자 활동" 피드에 쓸 가장 최근 활동 하나를 찾음
-export function getLatestActivity(household, checklistItemLabels) {
-  const events = [];
+// 최근 기록 N개를 실시간 구독 (홈 화면 "최근 기록" 미리보기, 배우자 활동 피드에 사용)
+export function subscribeRecentEvents(householdId, count, callback) {
+  const q = query(
+    collection(db, "households", householdId, "events"),
+    orderBy("at", "desc"),
+    limit(count)
+  );
+  return onSnapshot(q, (snap) => {
+    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+  });
+}
 
+// 홈 화면 상단 "배우자 활동" 피드용 - 체크리스트 완료 기록 중 가장 최근 것 (사건 기록은 별도로 subscribeRecentEvents가 다룸)
+export function getLatestChecklistActivity(household, checklistItemLabels) {
   const checklistState = household.checklistState || {};
+  let latest = null;
+
   for (const [itemId, entry] of Object.entries(checklistState)) {
     if (entry && entry.done && entry.byName) {
-      events.push({
-        text: `${checklistItemLabels[itemId] || itemId} 완료`,
-        byName: entry.byName,
-        at: entry.at || 0,
-      });
+      const at = entry.at || 0;
+      if (!latest || at > latest.at) {
+        latest = { text: `${checklistItemLabels[itemId] || itemId} 완료했어요`, byName: entry.byName, at };
+      }
     }
   }
 
-  const symptomLog = household.symptomLog || [];
-  for (const entry of symptomLog) {
-    events.push({
-      text: `'${entry.symptom}' 증상 기록`,
-      byName: entry.byName,
-      at: entry.at || 0,
-    });
-  }
-
-  if (events.length === 0) return null;
-  events.sort((a, b) => b.at - a.at);
-  return events[0];
+  return latest;
 }

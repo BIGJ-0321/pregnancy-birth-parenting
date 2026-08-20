@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>고릴라니</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-  <link rel="stylesheet" href="css/style.css?v=5" />
-  <link rel="manifest" href="manifest.json?v=5" />
-  <link rel="icon" type="image/png" href="icon.png?v=5" />
-  <link rel="apple-touch-icon" href="icon.png?v=5" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
+  <link rel="manifest" href="manifest.json?v=6" />
+  <link rel="icon" type="image/png" href="icon.png?v=6" />
+  <link rel="apple-touch-icon" href="icon.png?v=6" />
   <meta name="theme-color" content="#f5ede0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="고릴라니" />
@@ -118,6 +118,19 @@
       </div>
 
       <div id="partner-feed" class="partner-feed" hidden></div>
+
+      <div class="card">
+        <p class="field-label" style="margin-top:0;">고릴라니에게 말하기</p>
+        <textarea id="note-input" rows="2" placeholder="오늘 있었던 일을 편하게 적어줘..."></textarea>
+        <button id="note-submit-btn" style="margin-top:8px; width:100%; background:var(--accent); color:var(--bg);">기록하기</button>
+      </div>
+
+      <div class="card" id="recent-events-card" hidden>
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <p class="field-label" style="margin-top:0;">최근 기록</p>
+        </div>
+        <ul id="recent-events-list" class="event-list"></ul>
+      </div>
 
       <div class="role-toggle">
         <button id="role-mom-btn" class="role-btn active">엄마</button>
@@ -270,6 +283,6 @@
     </nav>
   </div>
 
-  <script type="module" src="js/main.js?v=5"></script>
+  <script type="module" src="js/main.js?v=6"></script>
 </body>
 </html>

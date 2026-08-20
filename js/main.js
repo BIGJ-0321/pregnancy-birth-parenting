@@ -1,4 +1,4 @@
-import { auth, googleProvider } from "./firebase.js?v=5";
+import { auth, googleProvider } from "./firebase.js?v=6";
 import {
   signInWithPopup,
   signOut,
@@ -11,14 +11,15 @@ import {
   saveHouseholdSetup,
   subscribeHousehold,
   toggleChecklistItem,
-  addSymptomRecord,
-  getLatestActivity,
+  addEvent,
+  subscribeRecentEvents,
+  getLatestChecklistActivity,
   saveNextCheckup,
   saveProfile,
   setMemberRole,
-} from "./household.js?v=5";
-import { SITUATION_TAGS } from "./tags.js?v=5";
-import { getPregnancyStatus, dueDateFromLMP, daysUntil } from "./pregnancy.js?v=5";
+} from "./household.js?v=6";
+import { SITUATION_TAGS } from "./tags.js?v=6";
+import { getPregnancyStatus, dueDateFromLMP, daysUntil } from "./pregnancy.js?v=6";
 import {
   getWeeklyInfo,
   getChecklistForWeek,
@@ -26,9 +27,9 @@ import {
   getMomCaution,
   MEDICAL_DISCLAIMER,
   CHECKLIST_ITEMS,
-} from "./weeklyContent.js?v=5";
-import { SYMPTOMS } from "./symptomsContent.js?v=5";
-import { CANIDO_ITEMS } from "./canidoContent.js?v=5";
+} from "./weeklyContent.js?v=6";
+import { SYMPTOMS } from "./symptomsContent.js?v=6";
+import { CANIDO_ITEMS } from "./canidoContent.js?v=6";
 
 // ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 
@@ -64,8 +65,13 @@ function currentUserName() {
   return auth.currentUser?.displayName || "배우자";
 }
 
+let recentEvents = [];
+let unsubscribeEvents = null;
+
 function watchHousehold(householdId) {
   if (unsubscribeHousehold) unsubscribeHousehold();
+  if (unsubscribeEvents) unsubscribeEvents();
+
   let firstRender = true;
   unsubscribeHousehold = subscribeHousehold(householdId, (household) => {
     renderHousehold(household);
@@ -74,6 +80,11 @@ function watchHousehold(householdId) {
       setupCanidoView();
       firstRender = false;
     }
+  });
+
+  unsubscribeEvents = subscribeRecentEvents(householdId, 5, (events) => {
+    recentEvents = events;
+    if (lastHousehold) renderHome(lastHousehold);
   });
 }
 
@@ -366,6 +377,10 @@ const roleCardCautionTitleEl = document.getElementById("role-card-caution-title"
 const roleCardCautionTextEl = document.getElementById("role-card-caution-text");
 const checkupCardTextEl = document.getElementById("checkup-card-text");
 const todoSummaryTextEl = document.getElementById("todo-summary-text");
+const noteInput = document.getElementById("note-input");
+const noteSubmitBtn = document.getElementById("note-submit-btn");
+const recentEventsCard = document.getElementById("recent-events-card");
+const recentEventsListEl = document.getElementById("recent-events-list");
 const disclaimerEl = document.getElementById("disclaimer-text");
 disclaimerEl.textContent = MEDICAL_DISCLAIMER;
 
@@ -394,6 +409,54 @@ checkupCardEl.addEventListener("click", (e) => {
   e.preventDefault();
   switchView("todos");
 });
+
+noteSubmitBtn.addEventListener("click", async () => {
+  const text = noteInput.value.trim();
+  if (!text || !lastHousehold) return;
+  noteSubmitBtn.disabled = true;
+  try {
+    await addEvent(lastHousehold.id, { type: "note", rawText: text, byName: currentUserName() });
+    noteInput.value = "";
+  } catch (err) {
+    alert("저장 실패: " + err.message);
+  } finally {
+    noteSubmitBtn.disabled = false;
+  }
+});
+
+function formatRelativeTime(at) {
+  const diffMs = Date.now() - at;
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "방금";
+  if (diffMin < 60) return `${diffMin}분 전`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour}시간 전`;
+  const diffDay = Math.floor(diffHour / 24);
+  return `${diffDay}일 전`;
+}
+
+function renderRecentEvents() {
+  if (recentEvents.length === 0) {
+    recentEventsCard.hidden = true;
+    return;
+  }
+  recentEventsCard.hidden = false;
+  recentEventsListEl.innerHTML = "";
+  for (const event of recentEvents) {
+    const li = document.createElement("li");
+
+    const meta = document.createElement("span");
+    meta.className = "event-meta";
+    meta.textContent = `${formatRelativeTime(event.at)} · ${event.byName}`;
+    li.appendChild(meta);
+    li.appendChild(document.createElement("br"));
+
+    const prefix = event.type === "symptom" ? "🩺 " : "";
+    li.appendChild(document.createTextNode(prefix + event.rawText));
+
+    recentEventsListEl.appendChild(li);
+  }
+}
 
 // role-toggle/todo-summary-link/partner-feed는 CSS에서 display:flex를 고정으로 주기 때문에,
 // hidden 속성 대신 style.display로 직접 토글해야 확실히 감춰짐
@@ -432,14 +495,28 @@ function renderHome(household) {
 
   const labels = {};
   for (const item of CHECKLIST_ITEMS) labels[item.id] = item.label;
-  const activity = getLatestActivity(household, labels);
+  const checklistActivity = getLatestChecklistActivity(household, labels);
+  const latestEvent = recentEvents[0]
+    ? {
+        text:
+          recentEvents[0].type === "symptom"
+            ? `'${recentEvents[0].rawText}' 증상을 기록했어요`
+            : "메모를 남겼어요",
+        byName: recentEvents[0].byName,
+        at: recentEvents[0].at,
+      }
+    : null;
+  const activity = [checklistActivity, latestEvent]
+    .filter(Boolean)
+    .sort((a, b) => b.at - a.at)[0];
   if (activity) {
-    partnerFeedEl.textContent = `👋 ${activity.byName}님이 최근 '${activity.text}' 했어요`;
+    partnerFeedEl.textContent = `👋 ${activity.byName}님이 최근 ${activity.text}`;
     setVisible(partnerFeedEl, true);
   } else {
     setVisible(partnerFeedEl, false);
   }
 
+  renderRecentEvents();
   renderRoleCard(household);
   renderCheckupCard(household);
 
@@ -719,7 +796,7 @@ function renderSymptomDetail(name, householdId) {
     const row = document.getElementById("record-row");
     if (!e.target.checked) return;
     try {
-      await addSymptomRecord(householdId, name, currentUserName());
+      await addEvent(householdId, { type: "symptom", rawText: name, byName: currentUserName() });
       row.classList.add("done");
       row.querySelector("label").textContent = "기록됨 · 배우자에게 공유됨";
     } catch (err) {
@@ -810,6 +887,11 @@ onAuthStateChanged(auth, async (user) => {
       unsubscribeHousehold();
       unsubscribeHousehold = null;
     }
+    if (unsubscribeEvents) {
+      unsubscribeEvents();
+      unsubscribeEvents = null;
+    }
+    recentEvents = [];
     statusEl.textContent = "로그인되지 않음";
     loginBtn.hidden = false;
     logoutBtn.hidden = true;
