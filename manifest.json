@@ -1,0 +1,11 @@
+{
+  "name": "고릴라니",
+  "short_name": "고릴라니",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5ede0",
+  "theme_color": "#f5ede0",
+  "icons": [
+    { "src": "icon.png", "sizes": "1254x1254", "type": "image/png", "purpose": "any" }
+  ]
+}

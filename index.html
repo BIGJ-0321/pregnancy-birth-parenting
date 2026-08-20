@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>고릴라니</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+  <link rel="stylesheet" href="css/style.css?v=15" />
+  <link rel="manifest" href="manifest.json?v=15" />
+  <link rel="icon" type="image/png" href="icon.png?v=15" />
+  <link rel="apple-touch-icon" href="icon.png?v=15" />
+  <meta name="theme-color" content="#f5ede0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="고릴라니" />
+</head>
+<body>
+  <div id="page-header">
+    <h1>고릴라니</h1>
+    <p class="subtitle">우리 둘을 위한 부모 가이드</p>
+  </div>
+
+  <div class="card" id="auth-section">
+    <button id="login-btn">Google로 로그인</button>
+    <button id="logout-btn" hidden>로그아웃</button>
+    <p id="auth-status">확인 중...</p>
+  </div>
+
+  <div id="onboarding-wizard" hidden>
+
+    <div class="card wizard-step" id="step-role">
+      <h2>당신은 누구인가요?</h2>
+      <div class="choice-row">
+        <button class="choice-btn" data-role="mom">엄마</button>
+        <button class="choice-btn" data-role="dad">아빠</button>
+      </div>
+    </div>
+
+    <div class="card wizard-step" id="step-connect" hidden>
+      <h2>배우자가 먼저 시작했나요?</h2>
+      <div class="choice-row">
+        <button class="choice-btn" id="has-code-btn">네, 초대 코드가 있어요</button>
+        <button class="choice-btn" id="no-code-btn">아니요, 제가 처음이에요</button>
+      </div>
+
+      <div id="join-code-area" hidden>
+        <div class="join-row" style="margin-top:16px;">
+          <input id="wizard-invite-code-input" type="text" placeholder="초대 코드 입력 (예: AB12CD)" maxlength="6" />
+          <button id="wizard-join-btn">참여하기</button>
+        </div>
+      </div>
+      <p id="wizard-connect-error" class="error" hidden></p>
+    </div>
+
+    <div class="card wizard-step" id="step-due" hidden>
+      <h2>출산 예정일은 언제인가요?</h2>
+
+      <div class="radio-row">
+        <label><input type="radio" name="wizard-due-mode" value="hospital" checked /> 병원에서 받은 정보가 있어요</label>
+        <label><input type="radio" name="wizard-due-mode" value="lmp" /> 아직 병원 전이에요 (마지막 생리일로 계산)</label>
+      </div>
+
+      <div id="wizard-hospital-field">
+        <label class="field-label" for="wizard-ref-date-input">이 정보를 알려준 날짜</label>
+        <input id="wizard-ref-date-input" type="date" />
+
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <div style="flex:1;">
+            <label class="field-label" for="wizard-ref-week-input" style="margin-top:0;">임신 주수</label>
+            <input id="wizard-ref-week-input" type="number" min="1" max="42" placeholder="예: 13" />
+          </div>
+          <div style="flex:1;">
+            <label class="field-label" for="wizard-ref-day-input" style="margin-top:0;">일수</label>
+            <input id="wizard-ref-day-input" type="number" min="0" max="6" placeholder="예: 2" />
+          </div>
+        </div>
+
+        <label class="field-label" for="wizard-hospital-due-date-input">출산 예정일</label>
+        <input id="wizard-hospital-due-date-input" type="date" />
+      </div>
+
+      <div id="wizard-lmp-field" hidden>
+        <label class="field-label" for="wizard-lmp-input">마지막 생리 시작일</label>
+        <input id="wizard-lmp-input" type="date" />
+      </div>
+
+      <p class="field-label">해당하는 상황이 있으면 선택해줘 (없으면 넘어가도 돼)</p>
+      <div id="wizard-tags-list" class="tags-list"></div>
+
+      <button id="wizard-due-next-btn" style="margin-top:20px; width:100%; background:var(--accent); color:var(--bg);">다음</button>
+      <p id="wizard-due-error" class="error" hidden></p>
+    </div>
+
+    <div class="card wizard-step" id="step-invite" hidden>
+      <h2>배우자와 함께 사용할까요?</h2>
+      <div class="choice-row" id="invite-choice-row">
+        <button class="choice-btn" id="invite-now-btn">배우자 초대하기</button>
+        <button class="choice-btn" id="invite-later-btn">나중에 연결하기</button>
+      </div>
+
+      <div id="invite-code-area" hidden>
+        <p class="invite-code" id="wizard-invite-code-display"></p>
+        <button id="wizard-finish-btn" style="margin-top:16px; width:100%; background:var(--accent); color:var(--bg);">시작하기</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="app-shell" hidden>
+
+    <main id="view-home" class="view">
+      <div class="card" id="week-result-section">
+        <p class="eyebrow">오늘의 가이드</p>
+        <div class="week-title-row">
+          <h2 id="week-result-title"></h2>
+          <span class="dday-badge" id="week-dday-badge"></span>
+        </div>
+        <p class="baby-info" id="week-baby-info"></p>
+      </div>
+
+      <div class="role-toggle">
+        <button id="role-mom-btn" class="role-btn active">엄마</button>
+        <button id="role-dad-btn" class="role-btn">아빠</button>
+      </div>
+
+      <div class="card" id="mood-card">
+        <p class="field-label" style="margin-top:0;" id="mood-card-title">오늘 컨디션은 어때요?</p>
+        <div class="mood-row" id="mood-buttons">
+          <button class="mood-btn" data-mood="good"><img class="mood-emoji" src="images/mood/good.png?v=1" alt="" /><span class="mood-label">좋음</span></button>
+          <button class="mood-btn" data-mood="ok"><img class="mood-emoji" src="images/mood/ok.png?v=1" alt="" /><span class="mood-label">괜찮음</span></button>
+          <button class="mood-btn" data-mood="hard"><img class="mood-emoji" src="images/mood/hard.png?v=1" alt="" /><span class="mood-label">힘듦</span></button>
+          <button class="mood-btn" data-mood="very_hard"><img class="mood-emoji" src="images/mood/very_hard.png?v=1" alt="" /><span class="mood-label">매우힘듦</span></button>
+        </div>
+        <p id="mood-readonly-text" class="muted" hidden></p>
+      </div>
+
+      <div id="partner-feed" class="partner-feed" hidden></div>
+
+      <div class="card" id="note-card">
+        <p class="field-label" style="margin-top:0;">고릴라니에게 말하기</p>
+        <textarea id="note-input" rows="2" placeholder="오늘 있었던 일을 편하게 적어줘..."></textarea>
+        <button id="note-submit-btn" style="margin-top:8px; width:100%; background:var(--accent); color:var(--bg);">기록하기</button>
+      </div>
+
+      <div class="card" id="recent-events-card" hidden>
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <p class="field-label" style="margin-top:0;">최근 기록</p>
+        </div>
+        <ul id="recent-events-list" class="event-chip-list"></ul>
+      </div>
+
+      <div class="card icon-card" id="role-card-main">
+        <span class="icon-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.5-7-10a4.5 4.5 0 018-2.8A4.5 4.5 0 0119 10c0 5.5-7 10-7 10z"/></svg></span>
+        <div>
+          <p class="icon-card-title" id="role-card-main-title"></p>
+          <p class="icon-card-body" id="role-card-main-text"></p>
+        </div>
+      </div>
+
+      <div class="card icon-card" id="role-card-caution">
+        <span class="icon-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><circle cx="12" cy="16" r="0.8" fill="currentColor" stroke="none"/><path d="M10.5 3.5L2 19h20L13.5 3.5a1.7 1.7 0 00-3 0z"/></svg></span>
+        <div>
+          <p class="icon-card-title" id="role-card-caution-title"></p>
+          <p class="icon-card-body" id="role-card-caution-text"></p>
+        </div>
+      </div>
+
+      <a href="#" id="checkup-card" class="card icon-card">
+        <span class="icon-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>
+        <div>
+          <p class="icon-card-title">다음 검진</p>
+          <p class="icon-card-body" id="checkup-card-text"></p>
+        </div>
+      </a>
+
+      <a href="#" id="todo-summary-link" class="card icon-card">
+        <span class="icon-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3l1.5 3M15 3l-1.5 3"/><path d="M6 8c0-1.5 1-2.5 2.5-2.5h7C17 5.5 18 6.5 18 8v10a3 3 0 01-3 3H9a3 3 0 01-3-3V8z"/><path d="M9.5 12l2 2 3-3.5"/></svg></span>
+        <div>
+          <p class="icon-card-title">할 일</p>
+          <p class="icon-card-body" id="todo-summary-text"></p>
+        </div>
+      </a>
+
+    </main>
+
+    <main id="view-symptoms" class="view" hidden>
+      <h2>증상가이드</h2>
+      <p class="subtitle">지금 느끼는 증상을 선택해줘</p>
+      <div id="symptom-chips" class="tags-list"></div>
+      <div id="symptom-detail"></div>
+    </main>
+
+    <main id="view-canido" class="view" hidden>
+      <h2>이거 해도 돼?</h2>
+      <p class="subtitle">궁금한 걸 검색해봐</p>
+      <input id="canido-search" type="text" placeholder="예: 커피, 타이레놀, 비행기" />
+      <div id="canido-result"></div>
+      <p class="field-label">자주 찾는 검색어</p>
+      <div id="canido-chips" class="tags-list"></div>
+    </main>
+
+    <main id="view-todos" class="view" hidden>
+      <h2>검진 · 할 일</h2>
+
+      <section class="section-group">
+        <p class="section-group-title">검진</p>
+
+        <div class="card">
+          <p class="field-label" style="margin-top:0;">다음 검진일</p>
+          <div class="join-row">
+            <input id="checkup-date-input" type="date" />
+            <button id="save-checkup-btn">저장</button>
+          </div>
+          <p id="checkup-saved-text" class="muted" style="margin-top:8px;"></p>
+        </div>
+
+        <div class="card">
+          <p class="field-label" style="margin-top:0;">방문 기록</p>
+          <ul id="visit-list" class="event-list"></ul>
+          <p id="visit-empty" class="muted" hidden>아직 남긴 방문 기록이 없어요.</p>
+          <textarea id="visit-input" rows="2" placeholder="오늘 병원 다녀왔다면 메모 남기기..." style="margin-top:8px;"></textarea>
+          <button id="visit-submit-btn" style="margin-top:8px; width:100%; background:var(--accent); color:var(--bg);">기록하기</button>
+        </div>
+      </section>
+
+      <section class="section-group">
+        <p class="section-group-title">할 일</p>
+
+        <p class="field-label" style="margin-top:0;">이번 주 할 일</p>
+        <ul id="todo-list" class="checklist-list"></ul>
+        <p id="todo-empty" class="muted" hidden>이번 주에 해당하는 항목이 없어요.</p>
+
+        <p class="field-label">직접 추가한 할 일</p>
+        <ul id="custom-todo-list" class="checklist-list"></ul>
+        <p id="custom-todo-empty" class="muted" hidden>아직 직접 추가한 할 일이 없어요.</p>
+
+        <button type="button" id="custom-todo-add-trigger" class="add-trigger">+ 할 일 직접 추가하기</button>
+        <div class="card" id="custom-todo-form" hidden>
+          <input id="custom-todo-input" type="text" placeholder="할 일을 적어줘" />
+          <div class="assignee-picker" id="custom-todo-assignee-row">
+            <button class="assignee-choice selected" data-assignee="both">둘 다</button>
+            <button class="assignee-choice" data-assignee="mom">엄마</button>
+            <button class="assignee-choice" data-assignee="dad">아빠</button>
+          </div>
+          <button id="custom-todo-add-btn" style="margin-top:10px; width:100%; background:var(--accent); color:var(--bg);">할 일 추가하기</button>
+        </div>
+      </section>
+    </main>
+
+    <main id="view-more" class="view" hidden>
+      <h2>MY</h2>
+
+      <div class="card">
+        <p class="field-label" style="margin-top:0;">내 역할</p>
+        <div class="choice-row" id="settings-role-row">
+          <button class="choice-btn" data-role="mom">엄마</button>
+          <button class="choice-btn" data-role="dad">아빠</button>
+        </div>
+      </div>
+
+      <div class="card" id="spouse-status-card">
+        <p class="field-label" style="margin-top:0;">배우자 연결</p>
+        <p id="spouse-status-text" class="muted"></p>
+        <p class="invite-code" id="spouse-invite-code" hidden></p>
+      </div>
+
+      <div class="card">
+        <p class="field-label" style="margin-top:0;">내 정보</p>
+
+        <label class="field-label" for="settings-age-input">산모 나이 (만 나이)</label>
+        <input id="settings-age-input" type="number" min="15" max="60" placeholder="예: 32 (만 나이)" />
+
+        <div class="radio-row" style="margin-top:16px;">
+          <label><input type="radio" name="settings-due-mode" value="hospital" checked /> 병원에서 받은 정보가 있어요</label>
+          <label><input type="radio" name="settings-due-mode" value="lmp" /> 아직 병원 전이에요 (마지막 생리일로 계산)</label>
+        </div>
+
+        <div id="settings-hospital-field">
+          <label class="field-label" for="settings-ref-date-input">이 정보를 알려준 날짜</label>
+          <input id="settings-ref-date-input" type="date" />
+
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <div style="flex:1;">
+              <label class="field-label" for="settings-ref-week-input" style="margin-top:0;">임신 주수</label>
+              <input id="settings-ref-week-input" type="number" min="1" max="42" placeholder="예: 13" />
+            </div>
+            <div style="flex:1;">
+              <label class="field-label" for="settings-ref-day-input" style="margin-top:0;">일수</label>
+              <input id="settings-ref-day-input" type="number" min="0" max="6" placeholder="예: 2" />
+            </div>
+          </div>
+
+          <label class="field-label" for="settings-hospital-due-date-input">출산 예정일</label>
+          <input id="settings-hospital-due-date-input" type="date" />
+        </div>
+
+        <div id="settings-lmp-field" hidden>
+          <label class="field-label" for="settings-lmp-input">마지막 생리 시작일</label>
+          <input id="settings-lmp-input" type="date" />
+        </div>
+
+        <button id="save-settings-btn" style="margin-top:20px; width:100%; background:var(--accent); color:var(--bg);">저장하기</button>
+        <p id="settings-saved-text" class="muted" style="margin-top:8px;"></p>
+      </div>
+
+      <p class="disclaimer" id="disclaimer-text"></p>
+      <button id="app-logout-btn" class="text-link">로그아웃</button>
+    </main>
+
+    <nav id="tab-bar">
+      <button class="tab-btn" data-view="home">
+        <span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11L12 4l8 7"/><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9"/><path d="M10 20v-5h4v5"/></svg></span>홈
+      </button>
+      <button class="tab-btn" data-view="symptoms">
+        <span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg></span>증상가이드
+      </button>
+      <button class="tab-btn" data-view="canido">
+        <span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.5a2.7 2.7 0 115.2 1.2c-.7.9-1.7 1.2-1.7 2.6"/><circle cx="12.5" cy="16.8" r="0.9" fill="currentColor" stroke="none"/></svg></span>이거해도돼
+      </button>
+      <button class="tab-btn" data-view="todos">
+        <span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 9l2 2 4-4"/><path d="M8 16h6"/></svg></span>검진·할일
+      </button>
+      <button class="tab-btn" data-view="more">
+        <span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-4.2 0-7.5 3.8-7.5 8.5C4.5 17 8 20 12 21.5 16 20 19.5 17 19.5 11.5 19.5 6.8 16.2 3 12 3z"/><path d="M12 8.2c-1.6 0-2.8 1.6-2.8 3.7S10.4 15.5 12 15.5"/></svg></span>MY
+      </button>
+    </nav>
+  </div>
+
+  <script type="module" src="js/main.js?v=15"></script>
+</body>
+</html>
