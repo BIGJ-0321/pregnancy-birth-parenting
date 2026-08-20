@@ -1,4 +1,4 @@
-import { auth, googleProvider } from "./firebase.js?v=10";
+import { auth, googleProvider } from "./firebase.js?v=11";
 import {
   signInWithPopup,
   signOut,
@@ -23,9 +23,9 @@ import {
   saveNextCheckup,
   saveProfile,
   setMemberRole,
-} from "./household.js?v=10";
-import { SITUATION_TAGS } from "./tags.js?v=10";
-import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=10";
+} from "./household.js?v=11";
+import { SITUATION_TAGS } from "./tags.js?v=11";
+import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=11";
 import {
   getWeeklyInfo,
   getChecklistForWeek,
@@ -33,9 +33,9 @@ import {
   getMomCaution,
   MEDICAL_DISCLAIMER,
   CHECKLIST_ITEMS,
-} from "./weeklyContent.js?v=10";
-import { SYMPTOMS } from "./symptomsContent.js?v=10";
-import { CANIDO_ITEMS } from "./canidoContent.js?v=10";
+} from "./weeklyContent.js?v=11";
+import { SYMPTOMS } from "./symptomsContent.js?v=11";
+import { CANIDO_ITEMS } from "./canidoContent.js?v=11";
 
 // ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 
@@ -402,10 +402,12 @@ const roleCardCautionTitleEl = document.getElementById("role-card-caution-title"
 const roleCardCautionTextEl = document.getElementById("role-card-caution-text");
 const checkupCardTextEl = document.getElementById("checkup-card-text");
 const todoSummaryTextEl = document.getElementById("todo-summary-text");
+const noteCardEl = document.getElementById("note-card");
 const noteInput = document.getElementById("note-input");
 const noteSubmitBtn = document.getElementById("note-submit-btn");
 const recentEventsCard = document.getElementById("recent-events-card");
 const recentEventsListEl = document.getElementById("recent-events-list");
+const moodCardTitleEl = document.getElementById("mood-card-title");
 const moodButtonsEl = document.getElementById("mood-buttons");
 const moodReadonlyTextEl = document.getElementById("mood-readonly-text");
 const MOOD_LABELS = { good: "😊 좋음", ok: "🙂 괜찮음", hard: "😵 힘듦", very_hard: "🤢 매우힘듦" };
@@ -424,6 +426,7 @@ function setRole(role) {
   roleMomBtn.classList.toggle("active", role === "mom");
   roleDadBtn.classList.toggle("active", role === "dad");
   document.body.dataset.role = role;
+  noteCardEl.hidden = role !== "mom";
   if (lastHousehold) renderRoleCard(lastHousehold);
 }
 
@@ -470,6 +473,7 @@ function renderMoodCard(household) {
   const myRole = household.roles?.[auth.currentUser.uid];
   const isMom = myRole === "mom";
 
+  moodCardTitleEl.textContent = isMom ? "오늘 컨디션은 어때요?" : "오늘 아내의 컨디션";
   setVisible(moodButtonsEl, isMom);
   moodReadonlyTextEl.hidden = isMom;
 

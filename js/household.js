@@ -1,4 +1,4 @@
-import { db } from "./firebase.js?v=10";
+import { db } from "./firebase.js?v=11";
 import {
   doc,
   getDoc,

@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>고릴라니</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-  <link rel="stylesheet" href="css/style.css?v=10" />
-  <link rel="manifest" href="manifest.json?v=10" />
-  <link rel="icon" type="image/png" href="icon.png?v=10" />
-  <link rel="apple-touch-icon" href="icon.png?v=10" />
+  <link rel="stylesheet" href="css/style.css?v=11" />
+  <link rel="manifest" href="manifest.json?v=11" />
+  <link rel="icon" type="image/png" href="icon.png?v=11" />
+  <link rel="apple-touch-icon" href="icon.png?v=11" />
   <meta name="theme-color" content="#f5ede0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="고릴라니" />
@@ -118,7 +118,7 @@
       </div>
 
       <div class="card" id="mood-card">
-        <p class="field-label" style="margin-top:0;">오늘 컨디션은 어때요?</p>
+        <p class="field-label" style="margin-top:0;" id="mood-card-title">오늘 컨디션은 어때요?</p>
         <div class="mood-row" id="mood-buttons">
           <button class="mood-btn" data-mood="good"><span class="mood-emoji">😊</span><span class="mood-label">좋음</span></button>
           <button class="mood-btn" data-mood="ok"><span class="mood-emoji">🙂</span><span class="mood-label">괜찮음</span></button>
@@ -130,7 +130,7 @@
 
       <div id="partner-feed" class="partner-feed" hidden></div>
 
-      <div class="card">
+      <div class="card" id="note-card">
         <p class="field-label" style="margin-top:0;">고릴라니에게 말하기</p>
         <textarea id="note-input" rows="2" placeholder="오늘 있었던 일을 편하게 적어줘..."></textarea>
         <button id="note-submit-btn" style="margin-top:8px; width:100%; background:var(--accent); color:var(--bg);">기록하기</button>
@@ -317,6 +317,6 @@
     </nav>
   </div>
 
-  <script type="module" src="js/main.js?v=10"></script>
+  <script type="module" src="js/main.js?v=11"></script>
 </body>
 </html>
