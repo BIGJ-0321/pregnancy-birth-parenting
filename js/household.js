@@ -1,4 +1,4 @@
-import { db } from "./firebase.js?v=12";
+import { db } from "./firebase.js?v=13";
 import {
   doc,
   getDoc,
@@ -140,6 +140,10 @@ export async function addEvent(householdId, { type, rawText, byName }) {
     byName,
     at: Date.now(),
   });
+}
+
+export async function deleteEvent(householdId, eventId) {
+  await deleteDoc(doc(db, "households", householdId, "events", eventId));
 }
 
 // 최근 기록 N개를 실시간 구독 (홈 화면 "최근 기록" 미리보기, 배우자 활동 피드에 사용)

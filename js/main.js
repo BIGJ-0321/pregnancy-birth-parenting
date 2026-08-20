@@ -1,4 +1,4 @@
-import { auth, googleProvider } from "./firebase.js?v=12";
+import { auth, googleProvider } from "./firebase.js?v=13";
 import {
   signInWithPopup,
   signOut,
@@ -12,6 +12,7 @@ import {
   subscribeHousehold,
   toggleChecklistItem,
   addEvent,
+  deleteEvent,
   subscribeRecentEvents,
   getLatestChecklistActivity,
   saveTodayMood,
@@ -23,9 +24,9 @@ import {
   saveNextCheckup,
   saveProfile,
   setMemberRole,
-} from "./household.js?v=12";
-import { SITUATION_TAGS } from "./tags.js?v=12";
-import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=12";
+} from "./household.js?v=13";
+import { SITUATION_TAGS } from "./tags.js?v=13";
+import { getPregnancyStatus, dueDateFromLMP, daysUntil, getTodayDateStr } from "./pregnancy.js?v=13";
 import {
   getWeeklyInfo,
   getChecklistForWeek,
@@ -33,9 +34,9 @@ import {
   getMomCaution,
   MEDICAL_DISCLAIMER,
   CHECKLIST_ITEMS,
-} from "./weeklyContent.js?v=12";
-import { SYMPTOMS } from "./symptomsContent.js?v=12";
-import { CANIDO_ITEMS } from "./canidoContent.js?v=12";
+} from "./weeklyContent.js?v=13";
+import { SYMPTOMS } from "./symptomsContent.js?v=13";
+import { CANIDO_ITEMS } from "./canidoContent.js?v=13";
 
 // ---------- 공통: 로그인 / 가구 연결 / 온보딩 ----------
 
@@ -501,18 +502,67 @@ function formatRelativeTime(at) {
 
 const EVENT_PREFIX = { symptom: "🩺 ", visit: "🏥 " };
 
+async function handleDeleteEvent(eventId) {
+  try {
+    await deleteEvent(lastHousehold.id, eventId);
+  } catch (err) {
+    alert("삭제 실패: " + err.message);
+  }
+}
+
+function makeEventDeleteBtn(eventId, className) {
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = className;
+  deleteBtn.textContent = "✕";
+  deleteBtn.setAttribute("aria-label", "기록 삭제");
+  deleteBtn.addEventListener("click", () => handleDeleteEvent(eventId));
+  return deleteBtn;
+}
+
 function renderEventList(listEl, events) {
   listEl.innerHTML = "";
   for (const event of events) {
     const li = document.createElement("li");
 
+    const content = document.createElement("div");
+    content.className = "event-content";
+
     const meta = document.createElement("span");
     meta.className = "event-meta";
     meta.textContent = `${formatRelativeTime(event.at)} · ${event.byName}`;
-    li.appendChild(meta);
-    li.appendChild(document.createElement("br"));
+    content.appendChild(meta);
+    content.appendChild(document.createElement("br"));
 
-    li.appendChild(document.createTextNode((EVENT_PREFIX[event.type] || "") + event.rawText));
+    content.appendChild(document.createTextNode((EVENT_PREFIX[event.type] || "") + event.rawText));
+
+    li.appendChild(content);
+    li.appendChild(makeEventDeleteBtn(event.id, "event-delete"));
+
+    listEl.appendChild(li);
+  }
+}
+
+function renderEventChips(listEl, events) {
+  listEl.innerHTML = "";
+  for (const event of events) {
+    const li = document.createElement("li");
+    li.className = "event-chip";
+
+    const text = document.createElement("span");
+    text.className = "event-chip-text";
+
+    const label = document.createElement("span");
+    label.className = "event-chip-label";
+    label.textContent = (EVENT_PREFIX[event.type] || "") + event.rawText;
+
+    const time = document.createElement("span");
+    time.className = "event-chip-time";
+    time.textContent = formatRelativeTime(event.at);
+
+    text.append(label, time);
+    li.appendChild(text);
+    li.appendChild(makeEventDeleteBtn(event.id, "event-chip-delete"));
 
     listEl.appendChild(li);
   }
@@ -521,7 +571,7 @@ function renderEventList(listEl, events) {
 function renderRecentEvents() {
   const recent = recentEvents.slice(0, 5);
   recentEventsCard.hidden = recent.length === 0;
-  renderEventList(recentEventsListEl, recent);
+  renderEventChips(recentEventsListEl, recent);
 }
 
 function renderVisits() {

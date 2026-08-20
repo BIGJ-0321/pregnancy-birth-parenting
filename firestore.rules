@@ -36,11 +36,11 @@ service cloud.firestore {
 
       allow delete: if false;
 
-      // 자유 기록(사건 로그): 증상/메모 등 - 가구 멤버만 읽고 쓸 수 있음, 수정은 불가(기록은 남기고 지우지 않음)
+      // 자유 기록(사건 로그): 증상/메모 등 - 가구 멤버만 읽고 쓸 수 있음, 잘못 입력한 기록은 삭제 가능(수정은 불가)
       match /events/{eventId} {
-        allow read, create: if request.auth != null &&
+        allow read, create, delete: if request.auth != null &&
           request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
-        allow update, delete: if false;
+        allow update: if false;
       }
 
       // 오늘의 컨디션 체크인 (문서ID = 날짜) - 가구 멤버만 읽고 쓸 수 있음
